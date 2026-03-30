@@ -4,14 +4,14 @@ import logoUnet from '../assets/logo-unet.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
 
-function YaTienesUnaCuenta({ className = '' }) {
+function NoTienesUnaCuenta({ className = '' }) {
   return (
     <div className={`flex items-center justify-center gap-[6px] font-inter text-[16px] whitespace-nowrap ${className}`}>
       <p className="text-black">
-        ¿Ya tienes una cuenta?
+        ¿No tienes cuenta?
       </p>
-      <Link to="/login" className="text-[#155dfc] cursor-pointer hover:underline border-b border-transparent hover:border-[#155dfc] transition-colors">
-        Inicia sesión aquí
+      <Link to="/registro" className="text-[#155dfc] cursor-pointer hover:underline border-b border-transparent hover:border-[#155dfc] transition-colors">
+        Registrate aquí
       </Link>
     </div>
   );
@@ -25,24 +25,24 @@ function LogoEstandarUnetNegro({ className = '' }) {
   );
 }
 
-function MensajeCreacionDeCuenta({ className = '' }) {
+function MensajeBienvenidaLogin({ className = '' }) {
   return (
     <div className={`flex flex-col gap-3 items-center justify-center w-full ${className}`}>
       <LogoEstandarUnetNegro />
       <div className="flex flex-col font-jakarta font-bold text-center">
-        <h1 className="text-[24px] leading-tight text-black">Crea tu cuenta</h1>
-        <p className="font-normal text-[16px] text-black mt-2">Únete a U-Locate y no te pierdas en el campus.</p>
+        <h1 className="text-[24px] leading-tight text-black">Bienvenido de nuevo</h1>
+        <p className="font-normal text-[16px] text-black mt-2">Ingresa tus credenciales para continuar....</p>
       </div>
     </div>
   );
 }
 
-export default function Registro({ className = '' }) {
+export default function Login({ className = '' }) {
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Intentando crear cuenta...");
+    console.log("Intentando iniciar sesión...");
   };
 
   const handleVolver = (e) => {
@@ -53,11 +53,11 @@ export default function Registro({ className = '' }) {
   return (
     <div className={`bg-[#f9f9f9] border border-[#4a4a4a] flex flex-col gap-[30px] items-center px-6 py-10 sm:px-[25px] sm:py-[50px] rounded-[30px] w-full max-w-[626px] mx-auto shadow-sm ${className}`}>
       
-      <form onSubmit={handleRegister} className="flex flex-col gap-[14px] items-center w-full sm:w-[556px]">
+      <form onSubmit={handleLogin} className="flex flex-col gap-[14px] items-center w-full sm:w-[556px]">
         
         {/* Header & Inputs */}
         <div className="flex flex-col gap-4 items-center w-full">
-          <MensajeCreacionDeCuenta className="mb-4 sm:w-[408px]" />
+          <MensajeBienvenidaLogin className="mb-4 sm:w-[408px]" />
           
           <div className="w-full sm:w-[534px] flex flex-col gap-4">
             <InputField 
@@ -74,13 +74,6 @@ export default function Registro({ className = '' }) {
               placeholder="Escribe tu contraseña..."
               required
             />
-            <InputField 
-              id="confirm-password"
-              label="Contraseña"
-              type="password"
-              placeholder="Escribe tu contraseña nuevamente..."
-              required
-            />
           </div>
         </div>
         
@@ -90,14 +83,14 @@ export default function Registro({ className = '' }) {
             Volver
           </Button>
           <Button type="submit" variant="primary" className="sm:max-w-[356px]">
-            Registrarse
+            Entrar
           </Button>
         </div>
 
       </form>
 
       {/* Footer */}
-      <YaTienesUnaCuenta className="mt-4" />
+      <NoTienesUnaCuenta className="mt-4" />
 
     </div>
   );

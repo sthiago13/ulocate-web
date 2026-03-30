@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Registro from './Registro';
+import { Link } from "react-router-dom"
+
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
@@ -19,7 +20,6 @@ export default function Header() {
         { name: "Cómo funciona", href: "#how-it-works" },
     ]
 
-    const [abrirRegistro, setAbrirRegistro] = useState(false);
     return (
         <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"
             }`}>
@@ -43,14 +43,18 @@ export default function Header() {
                         </a>
                     ))}
                     <div className="h-6 w-px bg-gray-200 mx-2" />
-                    <button className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                    <Link 
+                        to="/login"
+                        className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                    >
                         Iniciar Sesión
-                    </button>
-                    <button 
-                    onClick={() => setAbrirRegistro(true)}
-                    className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-300 text-sm">
+                    </Link>
+                    <Link 
+                        to="/registro"
+                        className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-300 text-sm"
+                    >
                         Registrarse
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -90,12 +94,20 @@ export default function Header() {
                             ))}
                             <hr className="border-gray-100" />
                             <div className="flex flex-col gap-4">
-                                <button className="w-full py-4 text-gray-600 font-bold border border-gray-100 rounded-2xl">
+                                <Link 
+                                    to="/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="w-full py-4 text-gray-600 font-bold border border-gray-100 rounded-2xl block text-center"
+                                >
                                     Iniciar Sesión
-                                </button>
-                                <button className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20">
+                                </Link>
+                                <Link 
+                                    to="/registro"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 block text-center"
+                                >
                                     Registrarse
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </motion.div>

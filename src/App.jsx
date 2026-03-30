@@ -1,40 +1,18 @@
-import Header from "./components/Header"
-import Hero from "./components/Hero"
-import Stats from "./components/Stats"
-import Features from "./components/Features"
-import HowItWorks from "./components/HowItWorks"
-import CTA from "./components/CTA"
-import Footer from "./components/Footer"
-import Registro from './components/Registro';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import DesktopLogin from './pages/DesktopLogin'
+import DesktopRegistro from './pages/DesktopRegistro'
 
 function App() {
   return (
-    <>
-      <div className="min-h-screen w-full bg-white relative font-montserrat">
-        {/* Grid Background */}
-        <div
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 70% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-              linear-gradient(to right, #f3f4f6 1px, transparent 1px),
-              linear-gradient(to bottom, #f3f4f6 1px, transparent 1px)
-            `,
-            backgroundSize: "100% 100%, 40px 40px, 40px 40px",
-          }}
-        />
-        <div className="relative flex flex-col z-10">
-          <Header />
-          <Hero />
-          <Stats />
-          <Features />
-          <HowItWorks />
-          <CTA />
-          <Footer />
-        </div>
-
-      </div>
-    </>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<DesktopLogin />} />
+        <Route path="/registro" element={<DesktopRegistro />} />
+        {/* Aquí podrás añadir más rutas (ej. /dashboard) en el futuro */}
+      </Routes>
+    </BrowserRouter>
   )
 }
 
