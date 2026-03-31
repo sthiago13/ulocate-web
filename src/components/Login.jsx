@@ -43,6 +43,7 @@ export default function Login({ className = '' }) {
   const handleLogin = (e) => {
     e.preventDefault();
     console.log("Intentando iniciar sesión...");
+    navigate("/home");
   };
 
   const handleVolver = (e) => {

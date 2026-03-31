@@ -43,6 +43,7 @@ export default function Registro({ className = '' }) {
   const handleRegister = (e) => {
     e.preventDefault();
     console.log("Intentando crear cuenta...");
+    navigate("/home");
   };
 
   const handleVolver = (e) => {

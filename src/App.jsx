@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import DesktopLogin from './pages/DesktopLogin'
 import DesktopRegistro from './pages/DesktopRegistro'
+import Home from './pages/Home'
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<DesktopLogin />} />
         <Route path="/registro" element={<DesktopRegistro />} />
-        {/* Aquí podrás añadir más rutas (ej. /dashboard) en el futuro */}
+        <Route path="/home" element={<Home />} />
       </Routes>
     </BrowserRouter>
   )
