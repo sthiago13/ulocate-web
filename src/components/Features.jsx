@@ -1,33 +1,21 @@
 import { motion } from "framer-motion"
+import { MdOutlineLocationOn, MdSearch, MdOutlineMap } from "react-icons/md"
 
 const features = [
     {
         title: "Navegación Precisa",
         description: "Encuentra cualquier aula o laboratorio dentro del campus de la UNET con una precisión asombrosa.",
-        icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-            </svg>
-        )
+        icon: <MdOutlineLocationOn className="w-8 h-8 text-blue-600" />
     },
     {
         title: "Búsqueda Instantánea",
         description: "Filtra por edificios, departamentos o servicios estudiantiles y obtén resultados al momento.",
-        icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-        )
+        icon: <MdSearch className="w-8 h-8 text-blue-600" />
     },
     {
         title: "Siempre Actualizado",
         description: "Mapas dinámicos que reflejan los cambios en el campus, eventos y nuevas instalaciones.",
-        icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-        )
+        icon: <MdOutlineMap className="w-8 h-8 text-blue-600" />
     }
 ]
 

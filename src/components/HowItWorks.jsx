@@ -1,4 +1,5 @@
 import { motion } from "framer-motion"
+import { MdSmartphone } from "react-icons/md"
 
 const steps = [
     {
@@ -74,9 +75,7 @@ export default function HowItWorks() {
                                 {/* Placeholder for a mockup or image */}
                                 <div className="absolute inset-0 bg-gray-50 flex items-center justify-center p-10">
                                     <div className="w-full h-full border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 md:w-16 md:h-16 text-blue-200 mb-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
-                                        </svg>
+                                        <MdSmartphone className="w-12 h-12 md:w-16 md:h-16 text-blue-200 mb-4" />
                                         <span className="text-gray-400 font-bold text-sm md:text-base font-montserrat tracking-tight">Interfaz de Navegación</span>
                                     </div>
                                 </div>

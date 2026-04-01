@@ -1,5 +1,6 @@
 import Earth3D from "./Earth3D";
 import { motion } from "framer-motion"
+import { MdArrowForward } from "react-icons/md"
 
 export default function Hero() {
     return (
@@ -33,9 +34,7 @@ export default function Hero() {
                             <button className="group relative w-full md:w-auto px-10 py-4 rounded-full bg-gray-900 text-white font-bold overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 cursor-pointer">
                                 <span className="relative z-10 flex items-center justify-center gap-2">
                                     Explorar Campus
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 group-hover:translate-x-1 transition-transform">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                    </svg>
+                                    <MdArrowForward className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </span>
                                 <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             </button>

@@ -1,3 +1,5 @@
+import { MdEmail, MdLocationOn, MdOutlineLocationOn, MdOutlineMail } from "react-icons/md"
+
 export default function Footer() {
     return (
         <footer className="bg-gray-900 pt-20 pb-10 px-6 md:px-10 text-white rounded-t-[3rem]">
@@ -39,17 +41,12 @@ export default function Footer() {
                         <h4 className="font-bold text-lg mb-6">Contacto</h4>
                         <ul className="space-y-4 text-gray-400">
                             <li className="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-500">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                                </svg>
+                                <MdOutlineMail className="w-5 h-5 text-blue-500" />
                                 soporte@unet.edu.ve
                             </li>
                             <li className="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-500">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                </svg>
-                                San Cristóbal, Venezuela
+                                <MdOutlineLocationOn className="w-5 h-5 text-blue-500" />
+                                San Cristóbal, Táchira, Venezuela
                             </li>
                         </ul>
                     </div>
