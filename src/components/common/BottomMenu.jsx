@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
 import MenuUsuario from './MenuUsuario';
+import SearchPanel from './SearchPanel';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <>
@@ -23,7 +25,10 @@ export default function BottomMenu({ className = '' }) {
       </button>
 
       {/* Search Icon */}
-      <button className="p-3 hover:bg-gray-100 rounded-full transition-colors text-black group">
+      <button 
+        onClick={() => setIsSearchOpen(true)}
+        className="p-3 hover:bg-gray-100 rounded-full transition-colors text-black group"
+      >
          <MdSearch className="w-8 h-8 group-hover:scale-110 transition-transform" />
       </button>
       
@@ -31,6 +36,10 @@ export default function BottomMenu({ className = '' }) {
 
     {isMenuOpen && (
       <MenuUsuario onClose={() => setIsMenuOpen(false)} />
+    )}
+
+    {isSearchOpen && (
+      <SearchPanel onClose={() => setIsSearchOpen(false)} />
     )}
     </>
   );
