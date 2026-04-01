@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
+import { MdMenu, MdClose } from "react-icons/md"
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -62,13 +63,7 @@ export default function Header() {
                     className="md:hidden p-2 text-gray-600"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
-                        {isMenuOpen ? (
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        ) : (
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        )}
-                    </svg>
+                    {isMenuOpen ? <MdClose className="w-7 h-7" /> : <MdMenu className="w-7 h-7" />}
                 </button>
             </nav>
 

@@ -1,12 +1,13 @@
 import React from 'react';
+import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
 
 export default function MenuUsuario({ onClose }) {
   const menuItems = [
-    { label: "Mi perfil", icon: "person" },
-    { label: "Lugares favoritos", icon: "star" },
-    { label: "Historial de rutas", icon: "history" },
-    { label: "Opciones de Notificación", icon: "notifications_active" },
-    { label: "Administración", icon: "admin_panel_settings" },
+    { label: "Mi perfil", Icon: MdPerson },
+    { label: "Lugares favoritos", Icon: MdStar },
+    { label: "Historial de rutas", Icon: MdHistory },
+    { label: "Opciones de Notificación", Icon: MdNotificationsActive },
+    { label: "Administración", Icon: MdAdminPanelSettings },
   ];
 
   return (
@@ -31,26 +32,27 @@ export default function MenuUsuario({ onClose }) {
               onClick={onClose}
               className="bg-[#e9e9e9] hover:bg-gray-300 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
             >
-              <span className="material-symbols-outlined text-gray-700 text-[18px]">close</span>
+              <MdClose className="text-gray-700 text-[18px]" />
             </button>
           </div>
 
           {/* Opciones */}
           <div className="flex flex-col gap-[8px] mt-2">
             <div className="flex flex-col gap-[10px]">
-              {menuItems.map((item, index) => (
-                <button
-                  key={index}
-                  className="flex items-center gap-[16px] py-2 w-full hover:bg-gray-50 rounded-lg transition-colors text-left group"
-                >
-                  <span className="material-symbols-outlined text-gray-600 text-[24px] group-hover:text-[#155dfc] transition-colors">
-                    {item.icon}
-                  </span>
-                  <span className="font-['Plus_Jakarta_Sans'] text-[14px] text-[#101828] font-normal leading-[20px]">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
+              {menuItems.map((item, index) => {
+                const Icon = item.Icon;
+                return (
+                  <button
+                    key={index}
+                    className="flex items-center gap-[16px] py-2 w-full hover:bg-gray-50 rounded-lg transition-colors text-left group"
+                  >
+                    <Icon className="text-gray-600 text-[24px] group-hover:text-[#155dfc] transition-colors" />
+                    <span className="font-['Plus_Jakarta_Sans'] text-[14px] text-[#101828] font-normal leading-[20px]">
+                      {item.label}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
