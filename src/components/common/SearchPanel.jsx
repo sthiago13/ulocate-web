@@ -1,29 +1,45 @@
 import React, { useState } from 'react';
 import { MdClose } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as MdIcons from 'react-icons/md';
 import ResultCard from './ResultCard';
 import SearchBar from './SearchBar';
+import TarjetaUbicacion from './TarjetaUbicacion';
+import { ubicaciones, categorias } from '../../data/mockData';
 export default function SearchPanel({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
   
-  const categories = ["Academico", "Deporte", "Servicio"];
-  const [activeCategory, setActiveCategory] = useState("Academico");
+  // Categorías inferidas directamente de la data
+  const categoryFilters = ["Todos", ...categorias.map(c => c.Nombre_Categoria)];
+  const [activeCategory, setActiveCategory] = useState("Todos");
 
-  // Resultados de demostración temporal para visualizar el componente
-  const results = [
-    { id: 1, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-    { id: 2, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-    { id: 3, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-    { id: 4, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-    { id: 5, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-    { id: 6, title: "Edificio A", subtitle: "Academico", icon: "🎓" },
-  ];
+  // Resultados filtrados a tiempo real
+  const results = ubicaciones.filter(u => {
+      const gCat = categorias.find(c => c.ID_Categoria === u.ID_Categoria);
+      const matchesSearch = u.Nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = activeCategory === "Todos" || (gCat && gCat.Nombre_Categoria === activeCategory);
+      return matchesSearch && matchesCategory;
+  });
+
+  if (selectedUbicacionId) {
+    return (
+      <TarjetaUbicacion 
+        ubicacionId={selectedUbicacionId} 
+        onClose={() => {
+            setSelectedUbicacionId(null);
+            onClose(); // Cierra el panel completo para mantener limpio el UI
+        }} 
+      />
+    );
+  }
 
   return (
     <>
+      {/* Fondo oscuro overlay solo para panel de búsqueda */}
       <div
-        className="fixed inset-0 bg-black/10 z-30 transition-opacity"
+        className="fixed inset-0 bg-black/10 z-30 transition-opacity md:bg-transparent"
         onClick={onClose}
       />
 
@@ -39,15 +55,28 @@ export default function SearchPanel({ onClose }) {
 
         {/* Listado de Resultados ResultCard (Arriba como pidió el usuario) */}
         <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
-          {results.map((res, index) => (
-            <ResultCard 
-              key={`${res.id}-${index}`} 
-              title={res.title} 
-              subtitle={res.subtitle} 
-              icon={res.icon} 
-              variant="user" 
-            />
-          ))}
+          {results.length > 0 ? (
+            results.map((res) => {
+              const catObj = categorias.find(c => c.ID_Categoria === res.ID_Categoria);
+              const catName = catObj ? catObj.Nombre_Categoria : "Desconocido";
+              const IconComponent = catObj && catObj.Icono && MdIcons[catObj.Icono] ? MdIcons[catObj.Icono] : MdIcons.MdPlace;
+
+              return (
+                <div key={res.ID_Ubicacion} onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)}>
+                  <ResultCard 
+                    title={res.Nombre} 
+                    subtitle={catName} 
+                    icon={<IconComponent />} 
+                    variant="user" 
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center text-gray-500 mt-10 font-sans">
+              No se encontraron lugares.
+            </div>
+          )}
         </div>
 
         {/* Filtros Categorías (Desplegables según el SearchBar) */}
@@ -59,7 +88,7 @@ export default function SearchPanel({ onClose }) {
               exit={{ height: 0, opacity: 0 }}
               className="w-full flex items-center gap-3 overflow-x-auto scrollbar-hide mb-2 pb-1"
             >
-              {categories.map(cat => (
+              {categoryFilters.map(cat => (
                 <button 
                   key={cat}
                   onClick={() => setActiveCategory(cat)}

@@ -9,27 +9,27 @@ export default function BottomMenu({ className = '' }) {
 
   return (
     <>
-      <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-lg flex items-center justify-around w-[90%] sm:w-[500px] md:w-[600px] h-[80px] px-8 ${className}`}>
+      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 ${className}`}>
         
         {/* Menu Icon */}
         <button 
           onClick={() => setIsMenuOpen(true)}
-          className="p-3 hover:bg-gray-100 rounded-full transition-colors text-black group"
+          className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-black group"
         >
-          <MdMenu className="w-8 h-8 group-hover:scale-110 transition-transform" />
+          <MdMenu className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
 
         {/* Map Icon (Active) */}
-      <button className="p-3 bg-blue-50/50 hover:bg-blue-100 rounded-full transition-colors text-[#155dfc] group">
-        <MdMap className="w-8 h-8 group-hover:scale-110 transition-transform" />
+      <button className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors text-[#155dfc] group">
+        <MdMap className="w-7 h-7 group-hover:scale-110 transition-transform" />
       </button>
 
       {/* Search Icon */}
       <button 
         onClick={() => setIsSearchOpen(true)}
-        className="p-3 hover:bg-gray-100 rounded-full transition-colors text-black group"
+        className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-black group"
       >
-         <MdSearch className="w-8 h-8 group-hover:scale-110 transition-transform" />
+         <MdSearch className="w-7 h-7 group-hover:scale-110 transition-transform" />
       </button>
       
     </div>

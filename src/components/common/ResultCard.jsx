@@ -35,9 +35,9 @@ export default function ResultCard({
         {variant === "user" ? (
           <button 
             onClick={(e) => { e.stopPropagation(); setIsFavorite(!isFavorite); }}
-            className="p-2 rounded-full hover:bg-blue-50 transition-colors text-blue-600"
+            className="p-2 rounded-full hover:bg-yellow-50 transition-colors text-yellow-500"
           >
-            {isFavorite ? <MdStar className="w-7 h-7" /> : <MdStarBorder className="w-7 h-7 text-gray-400 hover:text-blue-500 transition-colors" />}
+            {isFavorite ? <MdStar className="w-7 h-7" /> : <MdStarBorder className="w-7 h-7 text-gray-400 hover:text-yellow-500 transition-colors" />}
           </button>
         ) : (
           <>
