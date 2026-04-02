@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
+import UsuarioMiPerfil from './UsuarioMiPerfil';
 
 export default function MenuUsuario({ onClose }) {
+  const [showProfile, setShowProfile] = useState(false);
+
   const menuItems = [
-    { label: "Mi perfil", Icon: MdPerson },
+    { label: "Mi perfil", Icon: MdPerson, action: () => setShowProfile(true) },
     { label: "Lugares favoritos", Icon: MdStar },
     { label: "Historial de rutas", Icon: MdHistory },
     { label: "Opciones de Notificación", Icon: MdNotificationsActive },
@@ -19,7 +22,7 @@ export default function MenuUsuario({ onClose }) {
       />
 
       {/* Contenedor principal del menú */}
-      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-250px)] w-[276px] bg-white flex flex-col items-center justify-between p-[30px] rounded-[30px] z-50 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-250px)] w-[276px] bg-white flex flex-col items-center justify-between p-[30px] rounded-[30px] z-[45] shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
 
         <div className="w-full flex-col flex gap-[14px]">
 
@@ -44,6 +47,7 @@ export default function MenuUsuario({ onClose }) {
                 return (
                   <button
                     key={index}
+                    onClick={item.action}
                     className="flex items-center gap-[16px] py-2 w-full hover:bg-gray-50 rounded-lg transition-colors text-left group"
                   >
                     <Icon className="text-gray-600 text-[24px] group-hover:text-[#155dfc] transition-colors" />
@@ -67,6 +71,10 @@ export default function MenuUsuario({ onClose }) {
         </div>
 
       </div>
+
+      {showProfile && (
+        <UsuarioMiPerfil onClose={() => setShowProfile(false)} />
+      )}
     </>
   );
 }
