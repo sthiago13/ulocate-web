@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
+import { AnimatePresence } from 'framer-motion';
 import UsuarioMiPerfil from './UsuarioMiPerfil';
+import LugaresFavoritos from './LugaresFavoritos';
 
 export default function MenuUsuario({ onClose }) {
   const [showProfile, setShowProfile] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   const menuItems = [
     { label: "Mi perfil", Icon: MdPerson, action: () => setShowProfile(true) },
-    { label: "Lugares favoritos", Icon: MdStar },
+    { label: "Lugares favoritos", Icon: MdStar, action: () => setShowFavorites(true) },
     { label: "Historial de rutas", Icon: MdHistory },
     { label: "Opciones de Notificación", Icon: MdNotificationsActive },
     { label: "Administración", Icon: MdAdminPanelSettings },
@@ -72,9 +75,14 @@ export default function MenuUsuario({ onClose }) {
 
       </div>
 
-      {showProfile && (
-        <UsuarioMiPerfil onClose={() => setShowProfile(false)} />
-      )}
+      <AnimatePresence>
+        {showProfile && (
+          <UsuarioMiPerfil key="usuario-perfil" onClose={() => setShowProfile(false)} />
+        )}
+        {showFavorites && (
+          <LugaresFavoritos key="lugares-favoritos" onClose={() => setShowFavorites(false)} />
+        )}
+      </AnimatePresence>
     </>
   );
 }
