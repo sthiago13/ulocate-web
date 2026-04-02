@@ -1,7 +1,9 @@
 # UNET GPS
 
 Vista rapida de lo que falta:
-[] Login
-[] Landing Page
+[x] Login
+[x] Landing Page
+[x] Base de Datos
+[] Autenticacion
 [] Dashboard Admin
 [] Gps App
