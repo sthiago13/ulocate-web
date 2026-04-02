@@ -6,7 +6,8 @@ import HowItWorks from "../components/HowItWorks"
 import CTA from "../components/CTA"
 import Footer from "../components/Footer"
 
-export default function LandingPage() {
+// 1. Recibimos la session aquí
+export default function LandingPage({ session }) {
   return (
     <>
       <div className="min-h-screen w-full bg-white relative font-montserrat">
@@ -23,7 +24,8 @@ export default function LandingPage() {
           }}
         />
         <div className="relative flex flex-col z-10">
-          <Header />
+          {/* 2. Le pasamos la session al Header */}
+          <Header session={session} />
           <Hero />
           <Stats />
           <Features />

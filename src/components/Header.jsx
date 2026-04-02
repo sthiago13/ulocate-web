@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
 import { MdMenu, MdClose } from "react-icons/md"
 
-export default function Header() {
+// 1. Recibimos la session como prop
+export default function Header({ session }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
 
@@ -22,8 +23,7 @@ export default function Header() {
     ]
 
     return (
-        <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"
-            }`}>
+        <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"}`}>
             <nav className="max-w-7xl mx-auto px-6 md:px-10 flex justify-between items-center">
                 <div className="flex items-center gap-2 cursor-pointer group">
                     <img className="w-8 md:w-10 transition-transform duration-300 group-hover:rotate-12" src={`${import.meta.env.BASE_URL}logoUnet.svg`} alt="Logo UNET" />
@@ -32,7 +32,7 @@ export default function Header() {
                     </h3>
                 </div>
 
-                {/* Desktop Nav */}
+                {/* --- DESKTOP NAV --- */}
                 <div className="hidden md:flex gap-8 items-center">
                     {navLinks.map((link) => (
                         <a
@@ -44,18 +44,31 @@ export default function Header() {
                         </a>
                     ))}
                     <div className="h-6 w-px bg-gray-200 mx-2" />
-                    <Link 
-                        to="/login"
-                        className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
-                    >
-                        Iniciar Sesión
-                    </Link>
-                    <Link 
-                        to="/registro"
-                        className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-300 text-sm"
-                    >
-                        Registrarse
-                    </Link>
+                    
+                    {/* Renderizado Condicional: Desktop */}
+                    {session ? (
+                        <Link 
+                            to="/home"
+                            className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-300 text-sm"
+                        >
+                            Abrir Mapa
+                        </Link>
+                    ) : (
+                        <>
+                            <Link 
+                                to="/login"
+                                className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                            >
+                                Iniciar Sesión
+                            </Link>
+                            <Link 
+                                to="/registro"
+                                className="bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all duration-300 text-sm"
+                            >
+                                Registrarse
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -67,7 +80,7 @@ export default function Header() {
                 </button>
             </nav>
 
-            {/* Mobile Menu Overlay */}
+            {/* --- MOBILE MENU OVERLAY --- */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div
@@ -89,20 +102,34 @@ export default function Header() {
                             ))}
                             <hr className="border-gray-100" />
                             <div className="flex flex-col gap-4">
-                                <Link 
-                                    to="/login"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="w-full py-4 text-gray-600 font-bold border border-gray-100 rounded-2xl block text-center"
-                                >
-                                    Iniciar Sesión
-                                </Link>
-                                <Link 
-                                    to="/registro"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 block text-center"
-                                >
-                                    Registrarse
-                                </Link>
+                                
+                                {/* Renderizado Condicional: Mobile */}
+                                {session ? (
+                                    <Link 
+                                        to="/home"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 block text-center"
+                                    >
+                                        Abrir Mapa
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link 
+                                            to="/login"
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="w-full py-4 text-gray-600 font-bold border border-gray-100 rounded-2xl block text-center"
+                                        >
+                                            Iniciar Sesión
+                                        </Link>
+                                        <Link 
+                                            to="/registro"
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 block text-center"
+                                        >
+                                            Registrarse
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </motion.div>

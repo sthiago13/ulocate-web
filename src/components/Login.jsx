@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient'; // Ajusta la ruta según dónde esté exactamente este componente
 import logoUnet from '../assets/logo-unet.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
@@ -39,11 +40,41 @@ function MensajeBienvenidaLogin({ className = '' }) {
 
 export default function Login({ className = '' }) {
   const navigate = useNavigate();
+  
+  // 1. Añadimos estados para capturar la información del formulario
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  // 2. Transformamos la función en asíncrona para esperar a Supabase
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Intentando iniciar sesión...");
-    navigate("/home");
+    setLoading(true);
+    setErrorMsg(null); // Limpiamos errores anteriores
+
+    console.log("Intentando iniciar sesión con:", email);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      console.error("Error devuelto por Supabase:", error.message);
+      // Traducimos el error clásico de credenciales inválidas para el usuario final
+      if (error.message.includes('Invalid login credentials')) {
+        setErrorMsg('Correo o contraseña incorrectos.');
+      } else {
+        setErrorMsg('Ocurrió un error al iniciar sesión. Intenta de nuevo.');
+      }
+      setLoading(false);
+      return;
+    }
+
+    console.log("¡Sesión iniciada!", data.user);
+    // 3. Redirigimos al usuario al mapa tras el éxito
+    navigate("/home"); 
   };
 
   const handleVolver = (e) => {
@@ -60,13 +91,23 @@ export default function Login({ className = '' }) {
         <div className="flex flex-col gap-4 items-center w-full">
           <MensajeBienvenidaLogin className="mb-4 sm:w-[408px]" />
           
+          {/* Mostramos el mensaje de error si existe */}
+          {errorMsg && (
+            <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm text-center font-medium">
+              {errorMsg}
+            </div>
+          )}
+
           <div className="w-full sm:w-[534px] flex flex-col gap-4">
+            {/* 4. Conectamos los Inputs con el estado */}
             <InputField 
               id="email"
               label="Correo"
               type="email"
               placeholder="Escribe tu correo universitario..."
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <InputField 
               id="password"
@@ -74,17 +115,19 @@ export default function Login({ className = '' }) {
               type="password"
               placeholder="Escribe tu contraseña..."
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
         </div>
         
         {/* Actions */}
         <div className="flex flex-col-reverse sm:flex-row gap-4 items-center justify-between w-full sm:w-[534px] mt-6">
-          <Button type="button" variant="secondary" onClick={handleVolver} className="sm:max-w-[153px]">
+          <Button type="button" variant="secondary" onClick={handleVolver} className="sm:max-w-[153px]" disabled={loading}>
             Volver
           </Button>
-          <Button type="submit" variant="primary" className="sm:max-w-[356px]">
-            Entrar
+          <Button type="submit" variant="primary" className="sm:max-w-[356px]" disabled={loading}>
+            {loading ? 'Cargando...' : 'Entrar'}
           </Button>
         </div>
 

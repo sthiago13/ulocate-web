@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabaseClient';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
 import { AnimatePresence } from 'framer-motion';
 import UsuarioMiPerfil from './UsuarioMiPerfil';
 import LugaresFavoritos from './LugaresFavoritos';
+import ModalConfirmacion from './ModalConfirmacion';
 
 export default function MenuUsuario({ onClose }) {
+  const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const menuItems = [
     { label: "Mi perfil", Icon: MdPerson, action: () => setShowProfile(true) },
@@ -16,20 +21,22 @@ export default function MenuUsuario({ onClose }) {
     { label: "Administración", Icon: MdAdminPanelSettings },
   ];
 
+  // Función asíncrona para cerrar sesión
+  const handleCerrarSesion = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error al cerrar sesión:", error.message);
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <>
-      {/* Overlay opaco (opcional pero ayuda a enfocar el menú) */}
-      <div
-        className="fixed inset-0 bg-black/20 z-40 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/20 z-40 transition-opacity" onClick={onClose} />
 
-      {/* Contenedor principal del menú */}
       <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-250px)] w-[276px] bg-white flex flex-col items-center justify-between p-[30px] rounded-[30px] z-[45] shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
-
         <div className="w-full flex-col flex gap-[14px]">
-
-          {/* Header del menú */}
           <div className="flex items-center justify-between w-full">
             <h2 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[16px] leading-[18px] text-[#101828]">
               Menu Principal
@@ -42,7 +49,6 @@ export default function MenuUsuario({ onClose }) {
             </button>
           </div>
 
-          {/* Opciones */}
           <div className="flex flex-col gap-[8px] mt-2">
             <div className="flex flex-col gap-[10px]">
               {menuItems.map((item, index) => {
@@ -64,25 +70,33 @@ export default function MenuUsuario({ onClose }) {
           </div>
         </div>
 
-        {/* Botón Salir */}
         <div className="w-full mt-[30px] flex justify-center">
-          <button className="bg-[#cd1e1e] hover:bg-red-800 transition-colors w-full rounded-[25px] py-[10px] flex justify-center items-center">
+          <button 
+            onClick={() => setShowLogoutConfirm(true)} // Abrimos el modal
+            className="bg-[#cd1e1e] hover:bg-red-800 transition-colors w-full rounded-[25px] py-[10px] flex justify-center items-center"
+          >
             <span className="text-[#f9f9f9] font-['Plus_Jakarta_Sans'] font-normal text-[20px] leading-[20px]">
               Cerrar sesión
             </span>
           </button>
         </div>
-
       </div>
 
+      {/* Renderizado de modales */}
       <AnimatePresence>
-        {showProfile && (
-          <UsuarioMiPerfil key="usuario-perfil" onClose={() => setShowProfile(false)} />
-        )}
-        {showFavorites && (
-          <LugaresFavoritos key="lugares-favoritos" onClose={() => setShowFavorites(false)} />
-        )}
+        {showProfile && <UsuarioMiPerfil key="usuario-perfil" onClose={() => setShowProfile(false)} />}
+        {showFavorites && <LugaresFavoritos key="lugares-favoritos" onClose={() => setShowFavorites(false)} />}
       </AnimatePresence>
+
+      <ModalConfirmacion 
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleCerrarSesion}
+        titulo="Cerrar sesión"
+        mensaje="¿Estás seguro de que deseas cerrar tu sesión en U-Locate?"
+        textoConfirmar="Sí, salir"
+        textoCancelar="Cancelar"
+      />
     </>
   );
 }
