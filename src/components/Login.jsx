@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient'; // Ajusta la ruta según dónde esté exactamente este componente
-import logoUnet from '../assets/logo-unet.png';
+import logoULocate from '../assets/logo_ulocate_final.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
 
@@ -18,10 +18,10 @@ function NoTienesUnaCuenta({ className = '' }) {
   );
 }
 
-function LogoEstandarUnetNegro({ className = '' }) {
+function LogoEstandarULocate({ className = '' }) {
   return (
     <div className={`flex items-center justify-center size-[100px] ${className}`}>
-      <img alt="UNET Logo" className="w-full h-full object-contain" src={logoUnet} />
+      <img alt="Logo U-Locate" className="w-full h-full object-contain" src={logoULocate} />
     </div>
   );
 }
@@ -29,7 +29,7 @@ function LogoEstandarUnetNegro({ className = '' }) {
 function MensajeBienvenidaLogin({ className = '' }) {
   return (
     <div className={`flex flex-col gap-3 items-center justify-center w-full ${className}`}>
-      <LogoEstandarUnetNegro />
+      <LogoEstandarULocate />
       <div className="flex flex-col font-jakarta font-bold text-center">
         <h1 className="text-[24px] leading-tight text-black">Bienvenido de nuevo</h1>
         <p className="font-normal text-[16px] text-black mt-2">Ingresa tus credenciales para continuar....</p>

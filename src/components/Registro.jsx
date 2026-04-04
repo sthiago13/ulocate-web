@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import logoUnet from '../assets/logo-unet.png';
+import logoULocate from '../assets/logo_ulocate_final.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
 import { MdEmail } from 'react-icons/md';
@@ -19,10 +19,10 @@ function YaTienesUnaCuenta({ className = '' }) {
   );
 }
 
-function LogoEstandarUnetNegro({ className = '' }) {
+function LogoEstandarULocate({ className = '' }) {
   return (
     <div className={`flex items-center justify-center size-[100px] ${className}`}>
-      <img alt="UNET Logo" className="w-full h-full object-contain" src={logoUnet} />
+      <img alt="Logo U-Locate" className="w-full h-full object-contain" src={logoULocate} />
     </div>
   );
 }
@@ -30,7 +30,7 @@ function LogoEstandarUnetNegro({ className = '' }) {
 function MensajeCreacionDeCuenta({ className = '' }) {
   return (
     <div className={`flex flex-col gap-3 items-center justify-center w-full ${className}`}>
-      <LogoEstandarUnetNegro />
+      <LogoEstandarULocate />
       <div className="flex flex-col font-jakarta font-bold text-center">
         <h1 className="text-[24px] leading-tight text-black">Crea tu cuenta</h1>
         <p className="font-normal text-[16px] text-black mt-2">Únete a U-Locate y no te pierdas en el campus.</p>

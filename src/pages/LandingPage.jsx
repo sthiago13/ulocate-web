@@ -1,12 +1,11 @@
-import Header from "../components/Header"
-import Hero from "../components/Hero"
-import Stats from "../components/Stats"
-import Features from "../components/Features"
-import HowItWorks from "../components/HowItWorks"
-import CTA from "../components/CTA"
-import Footer from "../components/Footer"
+import Header from "../components/landing/Header"
+import Hero from "../components/landing/Hero"
+import Stats from "../components/landing/Stats"
+import Features from "../components/landing/Features"
+import HowItWorks from "../components/landing/HowItWorks"
+import CTA from "../components/landing/CTA"
+import Footer from "../components/landing/Footer"
 
-// 1. Recibimos la session aquí
 export default function LandingPage({ session }) {
   return (
     <>
@@ -24,7 +23,6 @@ export default function LandingPage({ session }) {
           }}
         />
         <div className="relative flex flex-col z-10">
-          {/* 2. Le pasamos la session al Header */}
           <Header session={session} />
           <Hero />
           <Stats />

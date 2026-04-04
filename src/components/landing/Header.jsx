@@ -23,10 +23,10 @@ export default function Header({ session }) {
     ]
 
     return (
-        <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"}`}>
+        <header className={`sticky top-0 z-50 transition-all duration-300 ${(scrolled || isMenuOpen) ? "bg-white backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"}`}>
             <nav className="max-w-7xl mx-auto px-6 md:px-10 flex justify-between items-center">
                 <div className="flex items-center gap-2 cursor-pointer group">
-                    <img className="w-8 md:w-10 transition-transform duration-300 group-hover:rotate-12" src={`${import.meta.env.BASE_URL}logoUnet.svg`} alt="Logo UNET" />
+                    <img className="w-10 md:w-10 transition-transform duration-300 group-hover:scale-110" src={`${import.meta.env.BASE_URL}logo_ulocate_plano.svg`} alt="Logo ULocate" />
                     <h3 className="font-bold text-xl md:text-2xl tracking-tight text-gray-800">
                         <span className="text-blue-600">U</span>-Locate GPS
                     </h3>
