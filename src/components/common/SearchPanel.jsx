@@ -7,6 +7,10 @@ import SearchBar from './SearchBar';
 import TarjetaUbicacion from './TarjetaUbicacion';
 import { supabase } from '../../lib/supabaseClient';
 
+// Store the data in module-level variables so it's cached between open/closes
+let cachedUbicaciones = null;
+let cachedCategorias = null;
+
 export default function SearchPanel({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -20,6 +24,13 @@ export default function SearchPanel({ onClose }) {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (cachedUbicaciones && cachedCategorias) {
+         setUbicaciones(cachedUbicaciones);
+         setCategorias(cachedCategorias);
+         setLoading(false);
+         return;
+      }
+
       setLoading(true);
       const [catRes, ubiRes] = await Promise.all([
         supabase.from('Categoria').select('*'),
@@ -29,8 +40,14 @@ export default function SearchPanel({ onClose }) {
       if (catRes.error) console.error("Error Categoria:", catRes.error);
       if (ubiRes.error) console.error("Error Ubicacion:", ubiRes.error);
 
-      if (catRes.data) setCategorias(catRes.data);
-      if (ubiRes.data) setUbicaciones(ubiRes.data);
+      if (catRes.data) {
+         setCategorias(catRes.data);
+         cachedCategorias = catRes.data;
+      }
+      if (ubiRes.data) {
+         setUbicaciones(ubiRes.data);
+         cachedUbicaciones = ubiRes.data;
+      }
       
       setLoading(false);
     };
@@ -90,14 +107,13 @@ export default function SearchPanel({ onClose }) {
               const IconComponent = catObj && catObj.Icono && MdIcons[catObj.Icono] ? MdIcons[catObj.Icono] : MdIcons.MdPlace;
 
               return (
-                <div key={res.ID_Ubicacion} onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)} className="cursor-pointer">
-                  <ResultCard 
-                    title={res.Nombre} 
-                    subtitle={catName} 
-                    icon={<IconComponent />} 
-                    variant="user" 
-                  />
-                </div>
+                <ResultCard 
+                  key={res.ID_Ubicacion}
+                  title={res.Nombre} 
+                  subtitle={catName} 
+                  icon={<IconComponent className="text-[#101828] text-[24px]" />} 
+                  onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)}
+                />
               );
             })
           ) : (
@@ -114,7 +130,7 @@ export default function SearchPanel({ onClose }) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="w-full flex items-center gap-3 overflow-x-auto scrollbar-hide mb-2 pb-1"
+              className="w-full shrink-0 flex items-center gap-3 overflow-x-auto scrollbar-hide py-3 mb-2"
             >
               {categoryFilters.map(cat => (
                 <button 

@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
 import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
+import UsuarioMiPerfil from './UsuarioMiPerfil';
+import LugaresFavoritos from './LugaresFavoritos';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   return (
     <>
@@ -35,7 +39,25 @@ export default function BottomMenu({ className = '' }) {
     </div>
 
     {isMenuOpen && (
-      <MenuUsuario onClose={() => setIsMenuOpen(false)} />
+      <MenuUsuario 
+        onClose={() => setIsMenuOpen(false)} 
+        onOpenFavorites={() => {
+           setIsMenuOpen(false);
+           setIsFavoritesOpen(true);
+        }}
+        onOpenProfile={() => {
+           setIsMenuOpen(false);
+           setIsProfileOpen(true);
+        }}
+      />
+    )}
+
+    {isFavoritesOpen && (
+      <LugaresFavoritos onClose={() => setIsFavoritesOpen(false)} />
+    )}
+
+    {isProfileOpen && (
+      <UsuarioMiPerfil onClose={() => setIsProfileOpen(false)} />
     )}
 
     {isSearchOpen && (

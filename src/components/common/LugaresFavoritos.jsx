@@ -1,8 +1,190 @@
-import React from 'react';
-import { MdClose, MdStar, MdBook, MdLocationOn, MdAccountBalance, MdRestaurant, MdTheaterComedy } from 'react-icons/md';
+import React, { useEffect, useState } from 'react';
+import { MdClose, MdStar, MdLocationOn, MdEdit, MdRestaurant, MdTheaterComedy } from 'react-icons/md';
+import * as MdIcons from 'react-icons/md';
 import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabaseClient';
+import ResultCard from './ResultCard';
+import ModalConfirmacion from './ModalConfirmacion';
+import ModalFormulario from './ModalFormulario';
+import TarjetaUbicacion from './TarjetaUbicacion';
 
-export default function LugaresFavoritos({ onClose }) {
+const FavItem = ({ fav, onEdit, onDelete, onViewLocation }) => {
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const ubi = fav.Ubicacion || {};
+  const cat = ubi.Categoria || {};
+  const IconComponent = cat.Icono && MdIcons[cat.Icono] ? MdIcons[cat.Icono] : MdIcons.MdPlace;
+
+  const tagsContent = (fav.Dia_Semana || fav.Hora || fav.Datos_Adicionales) ? (
+    <div className="flex flex-wrap gap-2">
+      {(fav.Dia_Semana || fav.Hora) && (
+        <div className="flex gap-2 text-xs text-blue-600 font-sans bg-blue-50 py-1 px-3 rounded-full border border-blue-100">
+          <span className="font-bold">{fav.Dia_Semana || 'Cualquier día'}</span>
+          {fav.Hora && <span>• {fav.Hora.substring(0,5)}</span>}
+        </div>
+      )}
+      {fav.Datos_Adicionales && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsNotesExpanded(!isNotesExpanded); }}
+          className={`flex gap-1 items-center text-xs font-sans py-1 px-3 rounded-full border transition-colors ${
+            isNotesExpanded ? 'bg-yellow-100 border-yellow-200 text-yellow-800' : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          <span>{isNotesExpanded ? 'Ocultar notas' : 'Ver notas'}</span>
+        </button>
+      )}
+    </div>
+  ) : null;
+
+  const expandedContent = fav.Datos_Adicionales && isNotesExpanded ? (
+    <motion.p 
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      transition={{ duration: 0.2 }}
+      className="text-[13px] text-gray-600 font-sans bg-white border border-gray-200 p-2.5 rounded-lg leading-snug break-words mt-1 origin-top"
+    >
+      {fav.Datos_Adicionales}
+    </motion.p>
+  ) : null;
+
+  const actionsContent = (
+    <>
+      <button 
+        onClick={() => onViewLocation(fav.ID_Ubicacion)}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold transition-colors"
+        title="Ver Ubicación en Mapa"
+      >
+        <MdLocationOn className="text-[18px]" />
+        <span className="hidden sm:inline">Ver ruta</span>
+      </button>
+      <button 
+        onClick={() => onEdit(fav)}
+        className="flex items-center justify-center w-[34px] h-[34px] bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-lg transition-colors"
+        title="Editar Notas/Alarmas"
+      >
+        <MdEdit className="text-[18px]" />
+      </button>
+      <button 
+        onClick={() => onDelete(fav)}
+        className="flex items-center justify-center w-[34px] h-[34px] bg-[#fffabe] hover:bg-red-100 rounded-lg transition-colors"
+        title="Eliminar Favorito"
+      >
+        <MdStar className="text-[#eab308] hover:text-red-600 text-[20px]" />
+      </button>
+    </>
+  );
+
+  return (
+    <ResultCard 
+      icon={<IconComponent className="text-[#101828] text-[24px]" />}
+      title={fav.Titulo_Guardado || ubi.Nombre}
+      subtitle={cat.Nombre_Categoria || 'Desconocido'}
+      tags={tagsContent}
+      expandedContent={expandedContent}
+      actions={actionsContent}
+    />
+  );
+};
+
+export default function LugaresFavoritos({ onClose, onLocationSelect }) {
+  const [favoritos, setFavoritos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  // States for Modals
+  const [modalType, setModalType] = useState(null); // 'confirm_delete' | 'edit_notes'
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFav, setSelectedFav] = useState(null); // Whole Object
+  const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
+  const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
+
+  const fetchFavoritos = async (currentUser) => {
+    const { data, error } = await supabase
+      .from('Ubicacion_Guardada')
+      .select(`
+        *,
+        Ubicacion (*, Categoria (*))
+      `)
+      .eq('ID_Usuario', currentUser.id)
+      .order('ID_Guardado', { ascending: false });
+    
+    if (data) setFavoritos(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+      if (currentUser) {
+        await fetchFavoritos(currentUser);
+      } else {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  const handleEditClick = (fav) => {
+    setSelectedFav(fav);
+    setFormData({
+      dia: fav.Dia_Semana || '',
+      hora: fav.Hora || '',
+      notas: fav.Datos_Adicionales || ''
+    });
+    setModalType('edit_notes');
+    setShowModal(true);
+  };
+
+  const handleDeleteClick = (fav) => {
+    setSelectedFav(fav);
+    setModalType('confirm_delete');
+    setShowModal(true);
+  };
+
+  const handleViewLocation = (idUbicacion) => {
+    setSelectedUbicacionId(idUbicacion);
+  };
+
+  const closeModals = () => {
+    setShowModal(false);
+    setTimeout(() => { setModalType(null); setSelectedFav(null); }, 200);
+  };
+
+  const onConfirmDelete = async () => {
+    if (selectedFav) {
+      await supabase.from('Ubicacion_Guardada').delete().eq('ID_Guardado', selectedFav.ID_Guardado);
+      setFavoritos(favoritos.filter(f => f.ID_Guardado !== selectedFav.ID_Guardado));
+    }
+    closeModals();
+  };
+
+  const onSaveNotes = async () => {
+    if (selectedFav) {
+      const dbDia = formData.dia.trim() !== '' ? formData.dia : null;
+      const dbHora = formData.hora.trim() !== '' ? formData.hora : null;
+      const dbNotas = formData.notas.trim() !== '' ? formData.notas : null;
+
+      const { data, error } = await supabase.from('Ubicacion_Guardada').update({
+        Dia_Semana: dbDia,
+        Hora: dbHora,
+        Datos_Adicionales: dbNotas
+      }).eq('ID_Guardado', selectedFav.ID_Guardado).select(`*, Ubicacion (*, Categoria (*))`).single();
+      
+      if (data) {
+        // Actualizar localmente sin refrescar todo
+        setFavoritos(favoritos.map(f => f.ID_Guardado === data.ID_Guardado ? data : f));
+      }
+    }
+    closeModals();
+  };
+
+  if (selectedUbicacionId) {
+    return <TarjetaUbicacion ubicacionId={selectedUbicacionId} onClose={() => {
+      setSelectedUbicacionId(null);
+      if (user) fetchFavoritos(user);
+    }} />;
+  }
+
   return (
     <>
       {/* Background Overlay */}
@@ -11,7 +193,6 @@ export default function LugaresFavoritos({ onClose }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/40 z-50"
-        onClick={onClose}
       />
 
       {/* Sidebar Modal */}
@@ -31,7 +212,7 @@ export default function LugaresFavoritos({ onClose }) {
             </div>
             <div className="flex flex-col font-['Plus_Jakarta_Sans']">
               <span className="font-medium text-[#101828] text-[20px] leading-[26px]">Lugares favoritos</span>
-              <span className="font-normal text-[#fff036] text-[16px] leading-[26px]">2 Guardados</span>
+              <span className="font-normal text-[#fff036] text-[16px] leading-[26px]">{favoritos.length} Guardados</span>
             </div>
           </div>
           <button
@@ -44,73 +225,132 @@ export default function LugaresFavoritos({ onClose }) {
 
         {/* Saved Places */}
         <div className="flex flex-col gap-[22px] w-full mb-[30px]">
-          {/* Item 1 */}
-          <div className="bg-[#f9f9f9] border border-[#101828] flex items-center justify-between px-[20px] py-[15px] rounded-[10px] w-full hover:bg-gray-100 transition-colors cursor-pointer">
-            <div className="flex gap-[15px] items-center">
-              <div className="bg-[#fffabe] flex items-center justify-center rounded-[10px] w-[40px] h-[40px] shrink-0">
-                <MdBook className="text-[#101828] text-[24px]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-['Plus_Jakarta_Sans'] font-bold text-[#101828] text-[16px] leading-[18px]">Biblioteca</span>
-                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[#101828] text-[14px] leading-[20px]">Servicio</span>
-              </div>
-            </div>
-            <div className="flex gap-[6px] items-center">
-              <MdLocationOn className="text-red-500 text-[20px]" />
-              <MdStar className="text-[#eab308] text-[20px]" />
-            </div>
-          </div>
-
-          {/* Item 2 */}
-          <div className="bg-[#f9f9f9] border border-[#101828] flex items-center justify-between px-[20px] py-[15px] rounded-[10px] w-full hover:bg-gray-100 transition-colors cursor-pointer">
-            <div className="flex gap-[15px] items-center">
-              <div className="bg-[#fffabe] flex items-center justify-center rounded-[10px] w-[40px] h-[40px] shrink-0">
-                <MdAccountBalance className="text-[#101828] text-[22px]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-['Plus_Jakarta_Sans'] font-bold text-[#101828] text-[16px] leading-[18px]">Edificio A</span>
-                <span className="font-['Plus_Jakarta_Sans'] font-normal text-[#101828] text-[14px] leading-[20px]">Academico</span>
-              </div>
-            </div>
-            <div className="flex gap-[6px] items-center">
-              <MdLocationOn className="text-red-500 text-[20px]" />
-              <MdStar className="text-[#eab308] text-[20px]" />
-            </div>
-          </div>
+          {loading ? (
+             <div className="text-center font-sans text-gray-500 py-10">Cargando favoritos...</div>
+          ) : favoritos.length === 0 ? (
+             <div className="text-center font-sans text-gray-500 py-10 bg-gray-50 rounded-[10px]">Aún no tienes lugares favoritos.</div>
+          ) : (
+            favoritos.map((fav) => {
+              const ubi = fav.Ubicacion || {};
+              const cat = ubi.Categoria || {};
+              const IconComponent = cat.Icono && MdIcons[cat.Icono] ? MdIcons[cat.Icono] : MdIcons.MdPlace;
+              
+              return (
+                <FavItem 
+                  key={fav.ID_Guardado} 
+                  fav={fav} 
+                  onEdit={handleEditClick} 
+                  onDelete={handleDeleteClick} 
+                  onViewLocation={handleViewLocation} 
+                />
+              );
+            })
+          )}
         </div>
 
-        {/* Add more places */}
-        <div className="flex flex-col gap-[16px] w-full">
-          <span className="font-['Plus_Jakarta_Sans'] font-normal text-[#4a4a4a] text-[14px] w-full">
-            Agregar mas lugares
+        {/* Populares Placeholder */}
+        <div className="flex flex-col gap-[16px] w-full mt-auto mb-10 pt-6 border-t border-gray-200">
+          <span className="font-bold text-gray-800 text-[16px] w-full flex items-center justify-between">
+            Lugares Populares
+            <span className="text-xs font-normal bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full border border-gray-200">Próximamente</span>
           </span>
 
-          <div className="bg-[#f9f9f9] flex items-center justify-between px-[15px] py-[10px] rounded-[10px] w-full hover:bg-gray-100 transition-colors cursor-pointer">
+          <div className="bg-[#f9f9f9] flex items-center justify-between px-[15px] py-[10px] rounded-[10px] w-full opacity-60 pointer-events-none border border-gray-200">
             <div className="flex gap-[15px] items-center">
               <div className="flex items-center justify-center w-[30px] h-[30px]">
-                <MdRestaurant className="text-gray-500 text-[24px]" />
+                <MdRestaurant className="text-gray-500 text-[20px]" />
               </div>
-              <span className="font-['Plus_Jakarta_Sans'] font-normal text-[#101828] text-[14px]">
+              <span className="font-sans font-medium text-[#101828] text-[14px]">
                 Comedor Universitario
               </span>
             </div>
-            <MdStar className="text-[#eab308] text-[24px]" />
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-bold text-yellow-600">Top #1</span>
+              <MdStar className="text-[#eab308] text-[20px]" />
+            </div>
           </div>
 
-          <div className="bg-[#f9f9f9] flex items-center justify-between px-[15px] py-[10px] rounded-[10px] w-full hover:bg-gray-100 transition-colors cursor-pointer">
+          <div className="bg-[#f9f9f9] flex items-center justify-between px-[15px] py-[10px] rounded-[10px] w-full opacity-60 pointer-events-none border border-gray-200">
             <div className="flex gap-[15px] items-center">
               <div className="flex items-center justify-center w-[30px] h-[30px]">
-                <MdTheaterComedy className="text-gray-500 text-[24px]" />
+                <MdTheaterComedy className="text-gray-500 text-[20px]" />
               </div>
-              <span className="font-['Plus_Jakarta_Sans'] font-normal text-[#101828] text-[14px]">
+              <span className="font-sans font-medium text-[#101828] text-[14px]">
                 Teatro de la Universidad
               </span>
             </div>
-            <MdStar className="text-[#eab308] text-[24px]" />
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-bold text-yellow-600">Top #2</span>
+              <MdStar className="text-[#eab308] text-[20px]" />
+            </div>
           </div>
         </div>
 
       </motion.div>
+
+      {/* MODALES */}
+      {modalType === 'confirm_delete' && selectedFav ? (
+        <ModalConfirmacion 
+          isOpen={showModal}
+          onClose={closeModals}
+          onConfirm={onConfirmDelete}
+          titulo="Eliminar Favorito"
+          mensaje={`¿Estás seguro de que deseas eliminar ${selectedFav.Titulo_Guardado} de tus favoritos?`}
+          textoConfirmar="Eliminar"
+          textoCancelar="Cancelar"
+          colorConfirmar="bg-red-600 hover:bg-red-700"
+        />
+      ) : modalType === 'edit_notes' && selectedFav ? (
+        <ModalFormulario
+          isOpen={showModal}
+          onClose={closeModals}
+          onSubmit={onSaveNotes}
+          titulo="Editar Detalles"
+          subtitulo={`Ajusta las notificaciones o apuntes para ${selectedFav.Titulo_Guardado}`}
+          textoConfirmar="Guardar Cambios"
+        >
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Día Frecuente</label>
+            <select 
+              value={formData.dia}
+              onChange={e => setFormData({...formData, dia: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Selecciona (Opcional)</option>
+              <option value="Lunes">Lunes</option>
+              <option value="Martes">Martes</option>
+              <option value="Miércoles">Miércoles</option>
+              <option value="Jueves">Jueves</option>
+              <option value="Viernes">Viernes</option>
+              <option value="Sábado">Sábado</option>
+            </select>
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Hora</label>
+            <input 
+              type="time" 
+              value={formData.hora}
+              onChange={e => setFormData({...formData, hora: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Notas adicionales</label>
+            <textarea 
+              rows="3"
+              maxLength={100}
+              placeholder="Ej: Traer la lapto, pedir cita previa..."
+              value={formData.notas}
+              onChange={e => setFormData({...formData, notas: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+            />
+            <span className="text-xs text-gray-400 text-right">{formData.notas.length}/100</span>
+          </div>
+        </ModalFormulario>
+      ) : null}
+
     </>
   );
 }

@@ -4,6 +4,7 @@ import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import ModalConfirmacion from './ModalConfirmacion';
+import ModalFormulario from './ModalFormulario';
 
 export default function TarjetaUbicacion({ ubicacionId, onClose }) {
   const [ubicacion, setUbicacion] = useState(null);
@@ -20,6 +21,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
   // States for the ModalConfirmacion
   const [modalType, setModalType] = useState(null); // 'confirm_delete' | 'add_notes'
   const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
 
   useEffect(() => {
     if (!ubicacionId) return;
@@ -105,7 +107,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
       if (!error && data) {
         setIsFavorite(true);
         setFavoriteId(data.ID_Guardado);
-        // Sugerir añadir notas
+        setFormData({ dia: '', hora: '', notas: '' }); // Reset
         setModalType('add_notes');
         setShowModal(true);
       }
@@ -119,11 +121,28 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
       setIsFavorite(false);
       setFavoriteId(null);
       setShowModal(false);
-    } else if (modalType === 'add_notes') {
-      setShowModal(false);
-      // TODO: Redirigir a LugaresFavoritos
-      alert("En desarrollo: Aquí serías redirigido al componente LugaresFavoritos.jsx");
     }
+  };
+
+  const onSaveNotes = async () => {
+    if (favoriteId) {
+      const dbDia = formData.dia.trim() !== '' ? formData.dia : null;
+      const dbHora = formData.hora.trim() !== '' ? formData.hora : null;
+      const dbNotas = formData.notas.trim() !== '' ? formData.notas : null;
+
+      await supabase.from('Ubicacion_Guardada').update({
+        Dia_Semana: dbDia,
+        Hora: dbHora,
+        Datos_Adicionales: dbNotas
+      }).eq('ID_Guardado', favoriteId);
+    }
+    setShowModal(false);
+    setModalType(null);
+  };
+
+  const cancelarModal = () => {
+    setShowModal(false);
+    setModalType(null);
   };
 
   if (loading) {
@@ -292,16 +311,68 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
         </div>
       </AnimatePresence>
 
-      <ModalConfirmacion 
-        isOpen={showModal}
-        onClose={cancelarModal}
-        onConfirm={onConfirmModal}
-        titulo={mTitulo}
-        mensaje={mMensaje}
-        textoConfirmar={mConfirmar}
-        textoCancelar={mCancelar}
-        colorConfirmar={mColor}
-      />
+      {modalType === 'confirm_delete' ? (
+        <ModalConfirmacion 
+          isOpen={showModal}
+          onClose={cancelarModal}
+          onConfirm={onConfirmModal}
+          titulo={mTitulo}
+          mensaje={mMensaje}
+          textoConfirmar={mConfirmar}
+          textoCancelar={mCancelar}
+          colorConfirmar={mColor}
+        />
+      ) : modalType === 'add_notes' ? (
+        <ModalFormulario
+          isOpen={showModal}
+          onClose={cancelarModal}
+          onSubmit={onSaveNotes}
+          titulo="¡Lugar Guardado!"
+          subtitulo={`Has guardado a ${ubicacion.Nombre} en Favoritos. ¿Quieres agregarle detalles de rutina?`}
+          textoConfirmar="Guardar Datos"
+          textoCancelar="Omitir"
+        >
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Día Frecuente</label>
+            <select 
+              value={formData.dia}
+              onChange={e => setFormData({...formData, dia: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Selecciona (Opcional)</option>
+              <option value="Lunes">Lunes</option>
+              <option value="Martes">Martes</option>
+              <option value="Miércoles">Miércoles</option>
+              <option value="Jueves">Jueves</option>
+              <option value="Viernes">Viernes</option>
+              <option value="Sábado">Sábado</option>
+            </select>
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Hora</label>
+            <input 
+              type="time" 
+              value={formData.hora}
+              onChange={e => setFormData({...formData, hora: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Notas adicionales</label>
+            <textarea 
+              rows="3"
+              maxLength={100}
+              placeholder="Ej: Traer la lapto, pedir cita previa..."
+              value={formData.notas}
+              onChange={e => setFormData({...formData, notas: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+            />
+            <span className="text-xs text-gray-400 text-right">{formData.notas.length}/100</span>
+          </div>
+        </ModalFormulario>
+      ) : null}
     </>
   );
 }
