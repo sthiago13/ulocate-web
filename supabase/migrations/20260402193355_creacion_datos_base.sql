@@ -9,14 +9,14 @@ VALUES
 INSERT INTO "Categoria"
     ("Nombre_Categoria", "Icono")
 VALUES
-    ('Aula', 'school'),
-    ('Laboratorio', 'biotech'),
-    ('Baño', 'wc'),
-    ('Oficina Administrativa', 'business_center'),
-    ('Comedor', 'restaurant'),
-    ('Cafeteria', 'coffee'),
-    ('Biblioteca', 'menu_book'),
-    ('Cancha Deportiva', 'sports_soccer');
+    ('Aula', 'MdSchool'),
+    ('Laboratorio', 'MdBiotech'),
+    ('Baño', 'MdWc'),
+    ('Oficina Administrativa', 'MdBusinessCenter'),
+    ('Comedor', 'MdRestaurant'),
+    ('Cafeteria', 'MdCoffee'),
+    ('Biblioteca', 'MdMenuBook'),
+    ('Cancha Deportiva', 'MdSportsSoccer');
 
 -- 3. Insertar Zonas del Campus
 INSERT INTO "Zona"
