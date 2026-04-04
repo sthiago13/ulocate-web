@@ -20,12 +20,11 @@ export default function ModalConfirmacion({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm"
           />
           
           {/* Contenedor del Modal */}
-          <div className="fixed inset-0 z-[51] flex items-center justify-center pointer-events-none px-4">
+          <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none px-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -41,12 +40,14 @@ export default function ModalConfirmacion({
               
               {/* Botones */}
               <div className="flex justify-end gap-3 mt-4">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  {textoCancelar}
-                </button>
+                {textoCancelar && (
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    {textoCancelar}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     onConfirm();

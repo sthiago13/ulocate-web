@@ -1,19 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdClose } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as MdIcons from 'react-icons/md';
 import ResultCard from './ResultCard';
 import SearchBar from './SearchBar';
 import TarjetaUbicacion from './TarjetaUbicacion';
-import { ubicaciones, categorias } from '../../data/mockData';
+import { supabase } from '../../lib/supabaseClient';
+
 export default function SearchPanel({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
   
-  // Categorías inferidas directamente de la data
-  const categoryFilters = ["Todos", ...categorias.map(c => c.Nombre_Categoria)];
+  const [ubicaciones, setUbicaciones] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [activeCategory, setActiveCategory] = useState("Todos");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const [catRes, ubiRes] = await Promise.all([
+        supabase.from('Categoria').select('*'),
+        supabase.from('Ubicacion').select('*')
+      ]);
+
+      if (catRes.error) console.error("Error Categoria:", catRes.error);
+      if (ubiRes.error) console.error("Error Ubicacion:", ubiRes.error);
+
+      if (catRes.data) setCategorias(catRes.data);
+      if (ubiRes.data) setUbicaciones(ubiRes.data);
+      
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const categoryFilters = ["Todos", ...categorias.map(c => c.Nombre_Categoria)];
 
   // Resultados filtrados a tiempo real
   const results = ubicaciones.filter(u => {
@@ -53,16 +77,20 @@ export default function SearchPanel({ onClose }) {
             </button>
         </div>
 
-        {/* Listado de Resultados ResultCard (Arriba como pidió el usuario) */}
+        {/* Listado de Resultados ResultCard */}
         <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
-          {results.length > 0 ? (
+          {loading ? (
+            <div className="text-center text-gray-500 mt-10 font-sans">
+              Cargando ubicaciones...
+            </div>
+          ) : results.length > 0 ? (
             results.map((res) => {
               const catObj = categorias.find(c => c.ID_Categoria === res.ID_Categoria);
               const catName = catObj ? catObj.Nombre_Categoria : "Desconocido";
               const IconComponent = catObj && catObj.Icono && MdIcons[catObj.Icono] ? MdIcons[catObj.Icono] : MdIcons.MdPlace;
 
               return (
-                <div key={res.ID_Ubicacion} onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)}>
+                <div key={res.ID_Ubicacion} onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)} className="cursor-pointer">
                   <ResultCard 
                     title={res.Nombre} 
                     subtitle={catName} 
@@ -79,7 +107,7 @@ export default function SearchPanel({ onClose }) {
           )}
         </div>
 
-        {/* Filtros Categorías (Desplegables según el SearchBar) */}
+        {/* Filtros Categorías */}
         <AnimatePresence>
           {showFilters && (
             <motion.div 
@@ -105,7 +133,7 @@ export default function SearchPanel({ onClose }) {
           )}
         </AnimatePresence>
 
-        {/* Input Buscador (Extraído al componente compartido) */}
+        {/* Input Buscador */}
         <SearchBar 
           value={searchTerm} 
           onChange={(e) => setSearchTerm(e.target.value)} 
