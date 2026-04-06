@@ -4,12 +4,16 @@ import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
 import UsuarioMiPerfil from './UsuarioMiPerfil';
 import LugaresFavoritos from './LugaresFavoritos';
+import HistorialRutas from './HistorialRutas';
+import Notificaciones from './Notificaciones';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   return (
     <>
@@ -49,6 +53,14 @@ export default function BottomMenu({ className = '' }) {
            setIsMenuOpen(false);
            setIsProfileOpen(true);
         }}
+        onOpenHistory={() => {
+           setIsMenuOpen(false);
+           setIsHistoryOpen(true);
+        }}
+        onOpenNotifications={() => {
+           setIsMenuOpen(false);
+           setIsNotificationsOpen(true);
+        }}
       />
     )}
 
@@ -58,6 +70,14 @@ export default function BottomMenu({ className = '' }) {
 
     {isProfileOpen && (
       <UsuarioMiPerfil onClose={() => setIsProfileOpen(false)} />
+    )}
+
+    {isHistoryOpen && (
+      <HistorialRutas onClose={() => setIsHistoryOpen(false)} />
+    )}
+
+    {isNotificationsOpen && (
+      <Notificaciones onClose={() => setIsNotificationsOpen(false)} />
     )}
 
     {isSearchOpen && (

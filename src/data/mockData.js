@@ -94,3 +94,30 @@ export const ubicacionesGuardadas = [
     Datos_Adicionales: "Traer laptop",
   },
 ];
+
+export const notificaciones = [
+  {
+    ID_Notificacion: 1,
+    Titulo: "Clase de Programación",
+    Mensaje: "Recuerda llevar tu laptop.",
+    Tiempo: "Hace 10 min",
+    Leida: false,
+    Icono: "MdSchool"
+  },
+  {
+    ID_Notificacion: 2,
+    Titulo: "Control de Estudios",
+    Mensaje: "Tu cita es mañana a las 8:00 AM.",
+    Tiempo: "Hace 1 hora",
+    Leida: true,
+    Icono: "MdBusinessCenter"
+  },
+  {
+    ID_Notificacion: 3,
+    Titulo: "Cafetín Central",
+    Mensaje: "¡Menú vegetariano disponible hoy!",
+    Tiempo: "Hace 3 horas",
+    Leida: true,
+    Icono: "MdRestaurant"
+  }
+];
