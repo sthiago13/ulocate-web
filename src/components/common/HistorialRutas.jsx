@@ -1,23 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { MdClose, MdHistory, MdLocationOn, MdDirections, MdAccessTime } from 'react-icons/md';
 import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabaseClient';
+import { formatRelativeDate } from '../../utils/formatters';
+import Spinner from './Spinner';
 
 export default function HistorialRutas({ onClose }) {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    // Simulando carga de historial desde la base de datos
-    setTimeout(() => {
-      setHistory([
-        { id: 1, origen: 'Entrada Principal', destino: 'Facultad de Ingeniería', fecha: 'Hoy, 09:30 AM', duracion: '5 min' },
-        { id: 2, origen: 'Facultad de Ingeniería', destino: 'Comedor Universitario', fecha: 'Hoy, 12:45 PM', duracion: '8 min' },
-        { id: 3, origen: 'Biblioteca Central', destino: 'Centro de Idiomas', fecha: 'Ayer, 15:20 PM', duracion: '12 min' },
-        { id: 4, origen: 'Centro de Idiomas', destino: 'Canchas Deportivas', fecha: 'Ayer, 17:10 PM', duracion: '15 min' }
-      ]);
+    const fetchHistory = async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data, error } = await supabase
+          .from('Historial_Ruta')
+          .select(`
+            ID_Historial,
+            Fecha_Hora,
+            Distancia_Total_Metros,
+            UbicacionOrigen:Ubicacion!ID_Ubicacion_Origen(Nombre),
+            UbicacionDestino:Ubicacion!ID_Ubicacion_Destino(Nombre)
+          `)
+          .eq('ID_Usuario', user.id)
+          .order('Fecha_Hora', { ascending: false });
+
+        if (!error && data) {
+          setHistory(data);
+        }
+      }
       setLoading(false);
-    }, 600);
+    };
+
+    fetchHistory();
   }, []);
+
+  const formatDistance = (meters) => {
+    if (meters === undefined || meters === null) return 'N/A';
+    if (meters < 1000) return `${meters} m`;
+    return `${(meters / 1000).toFixed(1)} km`;
+  };
 
   return (
     <>
@@ -60,10 +84,7 @@ export default function HistorialRutas({ onClose }) {
         {/* History List */}
         <div className="flex flex-col gap-[20px] w-full mb-[30px] pb-[40px]">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="font-sans text-gray-500 font-medium">Cargando historial...</span>
-            </div>
+            <Spinner color="border-blue-500" text="Cargando historial..." />
           ) : history.length === 0 ? (
             <div className="text-center font-sans text-gray-500 py-10 bg-gray-50 rounded-[16px] border border-gray-100 flex flex-col items-center justify-center gap-2">
               <MdHistory className="text-[48px] text-gray-300" />
@@ -75,17 +96,17 @@ export default function HistorialRutas({ onClose }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                key={route.id}
+                key={route.ID_Historial}
                 className="bg-white border border-gray-100 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] rounded-[20px] p-[20px] flex flex-col gap-4 hover:shadow-[0px_4px_20px_rgba(0,0,0,0.06)] transition-shadow"
               >
                 {/* Meta info */}
                 <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                   <div className="flex items-center gap-1.5 text-gray-500">
                     <MdAccessTime className="text-[18px]" />
-                    <span className="font-medium text-[13px]">{route.fecha}</span>
+                    <span className="font-medium text-[13px]">{formatRelativeDate(route.Fecha_Hora)}</span>
                   </div>
-                  <div className="bg-[#e8f0fe] text-[#155dfc] text-[12px] font-bold px-3 py-1.5 rounded-full w-fit flex items-center">
-                    {route.duracion}
+                  <div className="bg-[#e8f0fe] text-[#155dfc] text-[12px] font-bold px-3 py-1.5 rounded-full w-fit flex items-center" title="Distancia aproximada">
+                    {formatDistance(route.Distancia_Total_Metros)}
                   </div>
                 </div>
 
@@ -100,7 +121,9 @@ export default function HistorialRutas({ onClose }) {
                     </div>
                     <div className="flex flex-col flex-1 truncate">
                       <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Origen</span>
-                      <span className="text-[15px] font-bold text-gray-800 truncate">{route.origen}</span>
+                      <span className="text-[15px] font-bold text-gray-800 truncate">
+                        {route.UbicacionOrigen?.Nombre || 'Ubicación Desconocida'}
+                      </span>
                     </div>
                   </div>
 
@@ -111,7 +134,9 @@ export default function HistorialRutas({ onClose }) {
                     </div>
                     <div className="flex flex-col flex-1 truncate">
                       <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Destino</span>
-                      <span className="text-[15px] font-bold text-gray-800 truncate">{route.destino}</span>
+                      <span className="text-[15px] font-bold text-gray-800 truncate">
+                        {route.UbicacionDestino?.Nombre || 'Ubicación Desconocida'}
+                      </span>
                     </div>
                   </div>
                 </div>
