@@ -8,6 +8,7 @@ import HistorialRutas from './HistorialRutas';
 import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
+import GestionarUsuarios from './GestionarUsuarios';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +19,7 @@ export default function BottomMenu({ className = '' }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
+  const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
 
   return (
     <>
@@ -95,6 +97,10 @@ export default function BottomMenu({ className = '' }) {
             setIsAdminOpen(false);
             setIsGestionarLugaresOpen(true);
           }}
+          onOpenGestionarUsuarios={() => {
+            setIsAdminOpen(false);
+            setIsGestionarUsuariosOpen(true);
+          }}
         />
       )}
 
@@ -102,6 +108,11 @@ export default function BottomMenu({ className = '' }) {
       <GestionarLugares 
         isOpen={isGestionarLugaresOpen}
         onClose={() => setIsGestionarLugaresOpen(false)}
+      />
+
+      <GestionarUsuarios 
+        isOpen={isGestionarUsuariosOpen}
+        onClose={() => setIsGestionarUsuariosOpen(false)}
       />
 
       {isSearchOpen && (
