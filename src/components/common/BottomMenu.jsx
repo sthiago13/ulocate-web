@@ -7,7 +7,7 @@ import LugaresFavoritos from './LugaresFavoritos';
 import HistorialRutas from './HistorialRutas';
 import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
-import EditorLugar from './EditorLugar';
+import GestionarLugares from './GestionarLugares';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +17,7 @@ export default function BottomMenu({ className = '' }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isEditorLugarOpen, setIsEditorLugarOpen] = useState(false);
+  const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
 
   return (
     <>
@@ -91,17 +91,17 @@ export default function BottomMenu({ className = '' }) {
       {isAdminOpen && (
         <AdministracionPanel 
           onClose={() => setIsAdminOpen(false)} 
-          onOpenEditorLugar={() => {
+          onOpenGestionarLugares={() => {
             setIsAdminOpen(false);
-            setIsEditorLugarOpen(true);
+            setIsGestionarLugaresOpen(true);
           }}
         />
       )}
 
-      {/* EditorLugar maneja su propia AnimatePresence y prop isOpen internamente */}
-      <EditorLugar 
-        isOpen={isEditorLugarOpen}
-        onClose={() => setIsEditorLugarOpen(false)}
+      {/* GestionarLugares controla su propio hijo EditorLugar internamente */}
+      <GestionarLugares 
+        isOpen={isGestionarLugaresOpen}
+        onClose={() => setIsGestionarLugaresOpen(false)}
       />
 
       {isSearchOpen && (

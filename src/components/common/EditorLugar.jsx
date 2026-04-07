@@ -58,7 +58,7 @@ export default function EditorLugar({ isOpen, onClose }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-50 transition-opacity"
+            className="fixed inset-0 bg-black/40 z-[70] transition-opacity"
           />
 
           {/* Drawer (Panel derecho) */}
@@ -67,7 +67,7 @@ export default function EditorLugar({ isOpen, onClose }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+            className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-none sm:rounded-l-[30px] z-[80] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
           >
             {/* Header del Drawer */}
             <div className="flex items-center justify-between w-full mb-[30px] shrink-0">
