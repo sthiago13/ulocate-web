@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   MapContainer, TileLayer, GeoJSON, Marker, Popup,
-  useMapEvents, CircleMarker, Polyline
+  useMapEvents, CircleMarker, Polyline, Polygon
 } from 'react-leaflet';
 import L from 'leaflet';
 import geoDataRaw from '../../une.geojson?raw';
@@ -61,7 +61,7 @@ function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
 
   return (
     <div
-      style={{ zIndex: 1500 }}
+      style={{ zIndex: 9999 }}
       className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[340px] max-w-[92vw] bg-white rounded-2xl shadow-2xl p-5 border border-blue-100"
       onClick={e => e.stopPropagation()}
     >
@@ -95,7 +95,7 @@ function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
 // ── Panel lateral admin ───────────────────────────────────────────────────────
 function AdminSidePanel({ nodeCount, edgeCount, onClear, onClose }) {
   return (
-    <div style={{ zIndex: 1400 }} className="fixed top-20 right-4 w-[220px] bg-white rounded-2xl shadow-xl p-4 border border-blue-100">
+    <div style={{ zIndex: 9999 }} className="fixed top-20 right-4 w-[220px] bg-white rounded-2xl shadow-xl p-4 border border-blue-100">
       <div className="flex justify-between items-center mb-3">
         <span className="font-bold text-[15px] text-blue-700">🛣️ Modo Editor</span>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-lg">✕</button>
@@ -125,7 +125,7 @@ function NavigationPanel({ destination, distanceRemaining, totalDistance, onCanc
 
   return (
     <div
-      style={{ zIndex: 1400 }}
+      style={{ zIndex: 9999 }}
       className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[340px] max-w-[92vw] bg-white rounded-2xl shadow-2xl overflow-hidden border border-green-100"
     >
       {/* Barra de progreso superior */}
@@ -186,7 +186,7 @@ function ArrivalToast({ destination, onDismiss }) {
   }, [onDismiss]);
 
   return (
-    <div style={{ zIndex: 1600 }} className="fixed top-20 left-1/2 -translate-x-1/2 w-[320px] max-w-[92vw] bg-green-600 text-white rounded-2xl shadow-2xl p-5 text-center animate-bounce">
+    <div style={{ zIndex: 9999 }} className="fixed top-20 left-1/2 -translate-x-1/2 w-[320px] max-w-[92vw] bg-green-600 text-white rounded-2xl shadow-2xl p-5 text-center animate-bounce">
       <p className="text-3xl mb-2">🎉</p>
       <p className="font-bold text-[18px]">¡Has llegado!</p>
       <p className="text-green-100 text-[14px] mt-1">{destination?.nombre}</p>
@@ -299,30 +299,50 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
         }
       }
 
-      // Nodo origen: el más cercano al usuario
+      // Nodo origen: el más cercano al usuario o el primero de la lista si no hay GPS
       const currentPos = userPositionRef.current;
-      let startNodeId = ns[0].id;
+      let startNodeId = ns.length > 0 ? ns[0].id : null;
       if (currentPos) {
         startNodeId = closestNode(ns, currentPos[0], currentPos[1]);
       }
 
-      if (startNodeId === endNodeId) {
-        alert('Ya estás en el destino o muy cerca.');
+      console.log('🏁 Route Execution:', { 
+        startNodeId, 
+        endNodeId, 
+        userHasGPS: !!currentPos,
+        totalNodes: ns.length,
+        totalEdges: es.length
+      });
+
+      if (!startNodeId || !endNodeId) {
+        alert('No se pudo determinar el inicio o fin del camino. Verifica que haya nodos creados.');
         return;
       }
 
+
+      // 3. Ejecutar Dijkstra (protegido contra freeze)
       try {
+        console.log('🛤️ Buscando camino de %s a %s...', startNodeId, endNodeId);
         const { path, distance } = findShortestPath({ nodes: ns, edges: es }, startNodeId, endNodeId);
-        if (path.length === 0) {
-          alert('No hay un camino válido. Asegúrate de que los nodos están conectados con tramos.');
+        
+        let pathNodes = [];
+        if (path.length > 0) {
+          pathNodes = path.map(id => ns.find(n => n.id === id)).filter(Boolean);
+        } else if (startNodeId === endNodeId) {
+          // Si ya estamos en el nodo de destino, solo mostramos el nodo de destino
+          pathNodes = [ns.find(n => n.id === endNodeId)].filter(Boolean);
+        } else {
+          alert('No hay un camino conectado. El administrador debe unir los nodos para crear una ruta.');
           return;
         }
 
-        const routeNodes = path.map(id => ns.find(n => n.id === id)).filter(Boolean);
-        // Prefixar con posición real si hay GPS
+        const routeNodes = [...pathNodes];
+        
+        // Prefixar con posición real si hay GPS (crea el primer tramo desde DONDE ESTÁS al primer nodo)
         if (currentPos) {
           routeNodes.unshift({ id: 'user', lat: currentPos[0], lng: currentPos[1] });
         }
+
 
         // Calcular distancia total de la ruta (suma de tramos)
         let totalDist = 0;
@@ -474,7 +494,7 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
         minZoom={15}
         maxBounds={campusBounds}
         maxBoundsViscosity={1.0}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', zIndex: 1 }}
         zoomControl={false}
       >
         <TileLayer
@@ -482,11 +502,27 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* GeoJSON campus */}
+        {/* MÁSCARA: Oculta o atenúa todo fuera del campus para "solo dibujar el tramo delimitado" */}
+        {geoData && (
+          <Polygon
+            positions={[
+              [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]], // Cuadro mundial
+              geoData.features[0].geometry.coordinates[0].map(c => [c[1], c[0]]) // El "hueco" del campus (invirtiendo lat/lng)
+            ]}
+            pathOptions={{
+              color: 'transparent',
+              fillColor: '#f1f5f9', // Color de fondo "fuera" del campus
+              fillOpacity: 0.85,    // Opacidad para atenuar el resto del mundo
+              interactive: false
+            }}
+          />
+        )}
+
+        {/* GeoJSON campus - En un pane inferior para no tapar nada */}
         {geoData && (
           <GeoJSON
             data={geoData}
-            style={{ color: '#155dfc', weight: 3, opacity: 0.6, fillColor: '#155dfc', fillOpacity: 0.05 }}
+            style={{ color: '#155dfc', weight: 4, opacity: 0.8, fillColor: '#155dfc', fillOpacity: 0.05, interactive: false }}
           />
         )}
 

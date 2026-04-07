@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { MdClose } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResultCard from './ResultCard';
@@ -46,15 +47,18 @@ export default function SearchPanel({ onClose }) {
     );
   }
 
-  return (
+  return createPortal(
     <>
       <div
-        className="fixed inset-0 bg-black/10 z-30 transition-opacity md:bg-transparent"
+        style={{ zIndex: 9998 }}
+        className="fixed inset-0 bg-black/10 transition-opacity md:bg-transparent"
         onClick={onClose}
       />
 
-      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-225px)] w-[90%] sm:w-[450px] bg-white flex flex-col items-center p-5 rounded-[30px] z-40 shadow-[0px_4px_24px_rgba(0,0,0,0.15)] max-h-[60vh] overflow-hidden">
-
+      <div 
+        style={{ zIndex: 9999 }}
+        className="fixed bottom-32 left-[5%] sm:left-[calc(50%-225px)] w-[90%] sm:w-[450px] bg-white flex flex-col items-center p-5 rounded-[30px] shadow-[0px_4px_24px_rgba(0,0,0,0.15)] max-h-[60vh] overflow-hidden"
+      >
         {/* Cabecera */}
         <div className="w-full flex justify-between items-center mb-3">
           <h2 className="font-jakarta font-bold text-gray-800 text-lg ml-2">Buscar Lugares</h2>
@@ -121,6 +125,7 @@ export default function SearchPanel({ onClose }) {
           onFilterClick={() => setShowFilters(!showFilters)}
         />
       </div>
-    </>
+    </>,
+    document.body
   );
 }

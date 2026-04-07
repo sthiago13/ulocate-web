@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MdClose, MdStarBorder, MdStar, MdDirectionsWalk, MdPlace } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,8 +56,11 @@ export default function TarjetaUbicacion({ ubicacion, onClose }) {
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-48 pointer-events-none flex justify-center items-end pb-[95px] md:pb-0 md:items-center md:justify-start">
+  return createPortal(
+    <div 
+      style={{ zIndex: 9999 }}
+      className="fixed inset-0 pointer-events-none flex justify-center items-end pb-[95px] md:pb-0 md:items-center md:justify-start"
+    >
       <AnimatePresence>
         <motion.div
           key="tarjeta"
@@ -133,6 +137,7 @@ export default function TarjetaUbicacion({ ubicacion, onClose }) {
           </div>
         </motion.div>
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body
   );
 }

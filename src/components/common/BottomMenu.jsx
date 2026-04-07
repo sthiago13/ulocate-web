@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
 import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
@@ -19,10 +20,12 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
 
-  return (
+  return createPortal(
     <>
-      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 ${className}`}>
-
+      <div 
+        style={{ zIndex: 9999 }}
+        className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 ${className}`}
+      >
         {/* Menu Icon */}
         <button
           onClick={() => setIsMenuOpen(true)}
@@ -43,7 +46,6 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         >
           <MdSearch className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
-
       </div>
 
       {isMenuOpen && (
@@ -111,6 +113,7 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       {isSearchOpen && (
         <SearchPanel onClose={() => setIsSearchOpen(false)} />
       )}
-    </>
+    </>,
+    document.body
   );
 }

@@ -10,7 +10,7 @@ export default function Home() {
     <div className="flex flex-col h-screen w-full bg-gray-100 relative font-sans">
 
       {/* En-app Header */}
-      <HeaderApp className="z-20 shrink-0" />
+      <HeaderApp className="relative z-1000 shrink-0" />
 
       {/* Map Container Area */}
       <div className="flex-1 relative w-full bg-[#E5E5E5]">
@@ -20,9 +20,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Navigation Options Menu */}
+      {/* Navigation Options Menu (Portal inside) */}
       <BottomMenu
-        className="z-40"
         onOpenAdminRoutes={() => setIsRouteAdminMode(true)}
       />
 
