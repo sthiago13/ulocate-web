@@ -9,7 +9,7 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 
-export default function BottomMenu({ className = '' }) {
+export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -94,6 +94,10 @@ export default function BottomMenu({ className = '' }) {
           onOpenGestionarLugares={() => {
             setIsAdminOpen(false);
             setIsGestionarLugaresOpen(true);
+          }}
+          onOpenGestionarTramos={() => {
+            setIsAdminOpen(false);
+            if(onOpenAdminRoutes) onOpenAdminRoutes();
           }}
         />
       )}
