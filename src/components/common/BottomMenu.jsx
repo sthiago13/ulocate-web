@@ -7,6 +7,7 @@ import LugaresFavoritos from './LugaresFavoritos';
 import HistorialRutas from './HistorialRutas';
 import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
+import EditorLugar from './EditorLugar';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function BottomMenu({ className = '' }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isEditorLugarOpen, setIsEditorLugarOpen] = useState(false);
 
   return (
     <>
@@ -87,8 +89,20 @@ export default function BottomMenu({ className = '' }) {
       )}
 
       {isAdminOpen && (
-        <AdministracionPanel onClose={() => setIsAdminOpen(false)} />
+        <AdministracionPanel 
+          onClose={() => setIsAdminOpen(false)} 
+          onOpenEditorLugar={() => {
+            setIsAdminOpen(false);
+            setIsEditorLugarOpen(true);
+          }}
+        />
       )}
+
+      {/* EditorLugar maneja su propia AnimatePresence y prop isOpen internamente */}
+      <EditorLugar 
+        isOpen={isEditorLugarOpen}
+        onClose={() => setIsEditorLugarOpen(false)}
+      />
 
       {isSearchOpen && (
         <SearchPanel onClose={() => setIsSearchOpen(false)} />

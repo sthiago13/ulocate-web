@@ -32,7 +32,7 @@ export default function ModalFormulario({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full max-w-[400px] pointer-events-auto overflow-hidden flex flex-col"
+              className="bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full max-w-[400px] max-h-[85vh] pointer-events-auto overflow-hidden flex flex-col"
             >
               
               <div className="px-6 pt-6 pb-2">
@@ -51,11 +51,11 @@ export default function ModalFormulario({
                 }} 
                 className="flex flex-col w-full"
               >
-                <div className="px-6 py-4 flex flex-col gap-4">
+                <div className="px-6 py-4 flex flex-col gap-4 flex-1 overflow-y-auto custom-scrollbar">
                   {children}
                 </div>
 
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3 shrink-0">
                   {textoCancelar && (
                     <button
                       type="button"
