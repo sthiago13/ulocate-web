@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
 import ModalConfirmacion from './ModalConfirmacion';
 
-export default function MenuUsuario({ onClose, onOpenProfile, onOpenFavorites, onOpenHistory, onOpenNotifications }) {
+export default function MenuUsuario({ onClose, onOpenProfile, onOpenFavorites, onOpenHistory, onOpenNotifications, onOpenAdmin }) {
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -13,7 +13,7 @@ export default function MenuUsuario({ onClose, onOpenProfile, onOpenFavorites, o
     { label: "Lugares favoritos", Icon: MdStar, action: onOpenFavorites },
     { label: "Historial de rutas", Icon: MdHistory, action: onOpenHistory },
     { label: "Notificaciones", Icon: MdNotificationsActive, action: onOpenNotifications },
-    { label: "Administración", Icon: MdAdminPanelSettings },
+    { label: "Administración", Icon: MdAdminPanelSettings, action: onOpenAdmin },
   ];
 
   // Función asíncrona para cerrar sesión
