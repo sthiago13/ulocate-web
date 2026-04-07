@@ -98,7 +98,7 @@ export default function Registro({ className = '' }) {
       {/* RENDERIZADO CONDICIONAL: Si fue exitoso, mostramos la pantalla de espera */}
       {isSuccess ? (
         <div className="flex flex-col items-center text-center gap-6 w-full py-8">
-          <LogoEstandarUnetNegro />
+          <LogoEstandarULocate/>
           <div className="bg-blue-100 p-4 rounded-full">
             <MdEmail className="text-[#155dfc] text-5xl" />
           </div>
