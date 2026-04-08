@@ -62,7 +62,6 @@ export default function GestionarCategorias({ isOpen, onClose }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/40 z-[70] transition-opacity"
-              onClick={onClose}
             />
 
             {/* Panel Derecha */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdClose } from 'react-icons/md';
+import { MdClose, MdSave } from 'react-icons/md';
 import { supabase } from '../../lib/supabaseClient';
 import InputField from './InputField';
 import SelectField from './SelectField';
@@ -286,22 +286,28 @@ export default function EditorLugar({ isOpen, onClose, onSuccess, lugarToEdit })
             </div>
 
             {/* Footer Estático con Botones Guardar y Cancelar */}
-            <div className="w-full px-[30px] py-[25px] border-t border-gray-100 bg-white shrink-0 flex gap-4">
-              <Button 
+            <div className="w-full px-[30px] flex justify-between gap-4 pb-8 pt-[25px] border-t border-gray-100 bg-white shrink-0">
+              <button 
                 type="button"
-                variant="secondary"
                 onClick={onClose}
                 disabled={isSaving}
+                className="bg-[#e9e9e9] hover:bg-gray-300 text-gray-700 transition-colors w-full rounded-[13px] py-[10px] flex justify-center items-center h-[50px] font-medium"
               >
-                Cancelar
-              </Button>
-              <Button 
+                <span className="font-['Inter'] text-[20px]">
+                  Cancelar
+                </span>
+              </button>
+              <button 
                 type="submit"
                 form="editor-lugar-form"
                 disabled={isSaving}
+                className="bg-[#155dfc] hover:bg-blue-700 disabled:opacity-50 transition-colors w-full rounded-[13px] py-[10px] flex justify-center items-center h-[50px] gap-2"
               >
-                {isSaving ? "Guardando..." : "Guardar"}
-              </Button>
+                <MdSave className="text-white text-[24px]" />
+                <span className="text-[#f9f9f9] font-['Inter'] font-normal text-[20px]">
+                  {isSaving ? "Guardando..." : "Guardar"}
+                </span>
+              </button>
             </div>
 
           </motion.div>
