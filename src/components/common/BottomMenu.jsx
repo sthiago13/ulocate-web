@@ -11,6 +11,7 @@ import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
 import GestionarEventos from '../GestionarEventos';
+import GestionarCategorias from '../GestionarCategorias';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '' }) {
@@ -24,6 +25,7 @@ export default function BottomMenu({ className = '' }) {
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
   const [isGestionarEventosOpen, setIsGestionarEventosOpen] = useState(false);
+  const [isGestionarCategoriasOpen, setIsGestionarCategoriasOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
 
@@ -143,6 +145,10 @@ export default function BottomMenu({ className = '' }) {
             setIsAdminOpen(false);
             setIsGestionarEventosOpen(true);
           }}
+          onOpenGestionarCategorias={() => {
+            setIsAdminOpen(false);
+            setIsGestionarCategoriasOpen(true);
+          }}
         />
       )}
 
@@ -160,6 +166,11 @@ export default function BottomMenu({ className = '' }) {
       <GestionarEventos
         isOpen={isGestionarEventosOpen}
         onClose={() => setIsGestionarEventosOpen(false)}
+      />
+
+      <GestionarCategorias
+        isOpen={isGestionarCategoriasOpen}
+        onClose={() => setIsGestionarCategoriasOpen(false)}
       />
 
       {isSearchOpen && (

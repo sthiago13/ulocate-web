@@ -1,30 +1,24 @@
 import React, { useState } from 'react';
-import { MdClose, MdEvent, MdSend } from 'react-icons/md';
+import { MdClose, MdCategory, MdSend } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputField from './common/InputField';
 import Button from './common/Button';
 
-export default function CrearEvento({ isOpen, onClose, onCreate }) {
+export default function CrearCategoria({ isOpen, onClose, onCreate }) {
   const [nombre, setNombre] = useState('');
-  const [fecha, setFecha] = useState('');
-  const [ubicacion, setUbicacion] = useState('');
-  const [descripcion, setDescripcion] = useState('');
+  const [icono, setIcono] = useState('');
 
   const handleCreate = () => {
-    // Validar y enviar
-    const newEvent = {
-      Nombre: nombre,
-      Fecha: fecha,
-      Ubicacion: ubicacion,
-      Descripcion: descripcion,
+    if (!nombre.trim()) return;
+    
+    const newCat = {
+      Nombre_Categoria: nombre,
+      Icono: icono || 'MdCategory',
     };
-    if (onCreate) onCreate(newEvent);
-
-    // Limpiar
+    if (onCreate) onCreate(newCat);
+    
     setNombre('');
-    setFecha('');
-    setUbicacion('');
-    setDescripcion('');
+    setIcono('');
   };
 
   if (!isOpen) return null;
@@ -53,12 +47,12 @@ export default function CrearEvento({ isOpen, onClose, onCreate }) {
             {/* Header */}
             <div className="flex items-center justify-between w-full mb-[30px]">
               <div className="flex gap-[15px] items-center">
-                <div className="bg-purple-100 flex items-center justify-center rounded-full w-[50px] h-[50px] shrink-0">
-                  <MdEvent className="text-purple-600 text-[28px]" />
+                <div className="bg-amber-100 flex items-center justify-center rounded-full w-[50px] h-[50px] shrink-0">
+                  <MdCategory className="text-amber-600 text-[28px]" />
                 </div>
                 <div className="flex flex-col font-['Plus_Jakarta_Sans']">
-                  <span className="font-bold text-[#101828] text-[20px] leading-[26px]">Nueva Actividad</span>
-                  <span className="font-semibold text-purple-600 text-[14px]">Creando evento</span>
+                  <span className="font-bold text-[#101828] text-[20px] leading-[26px]">Nueva Categoría</span>
+                  <span className="font-semibold text-amber-600 text-[14px]">Agregando sección</span>
                 </div>
               </div>
               <button
@@ -71,51 +65,29 @@ export default function CrearEvento({ isOpen, onClose, onCreate }) {
 
             {/* Formulario */}
             <div className="flex-1 flex flex-col gap-5 font-['Plus_Jakarta_Sans'] mt-4">
-              {/* Nombre Evento */}
               <InputField
-                label="Nombre del Evento"
+                label="Nombre de Categoría"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej. Feria de Innovación"
+                placeholder="Ej. Académico, Recreación..."
               />
 
-              {/* Fecha y Hora */}
               <InputField
-                label="Fecha y Hora"
-                type="datetime-local"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
+                label="Nombre del Ícono (Opcional)"
+                value={icono}
+                onChange={(e) => setIcono(e.target.value)}
+                placeholder="Ej. MdSchool, MdRestaurant..."
               />
-
-              {/* Lugar / Ubicación */}
-              <InputField
-                label="Lugar o Ubicación"
-                value={ubicacion}
-                onChange={(e) => setUbicacion(e.target.value)}
-                placeholder="Ej. Auditorio Principal"
-              />
-
-              {/* Descripción */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[14px] font-medium text-gray-700">Breve Descripción</label>
-                  <span className="text-[12px] text-gray-400">{descripcion.length}/150</span>
-                </div>
-                <textarea
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  maxLength={150}
-                  className="w-full bg-[#f9f9f9] border border-gray-200 rounded-[12px] px-4 py-3 text-[#101828] focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors resize-none h-[80px]"
-                  placeholder="Detalles sobre de qué trata el evento..."
-                />
-              </div>
+              <p className="text-[12px] text-gray-500 -mt-2 ml-1">
+                Utiliza nombres de Material Design Icons (react-icons/md).
+              </p>
             </div>
 
             {/* Bottom Actions */}
             <div className="mt-auto pt-[30px]">
               <Button onClick={handleCreate} className="!text-[16px] !font-semibold !h-[55px] font-['Plus_Jakarta_Sans'] bg-[#101828] hover:bg-black border-none text-white shadow-lg flex justify-center items-center gap-2">
                 <MdSend className="text-white text-[20px]" />
-                Publicar Evento
+                Agregar Categoría
               </Button>
             </div>
 
