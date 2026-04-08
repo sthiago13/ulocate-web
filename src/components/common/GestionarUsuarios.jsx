@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { MdClose, MdPersonAdd, MdAdminPanelSettings, MdPerson, MdEmail } from 'react-icons/md';
+import { MdClose, MdPersonAdd, MdAdminPanelSettings, MdPerson, MdEmail, MdEdit } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
+import EditarUsuario from './EditarUsuario';
+import InvitarUsuario from './InvitarUsuario';
 
 export default function GestionarUsuarios({ isOpen, onClose }) {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,9 +40,10 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
           {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -115,6 +120,15 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
                           <span className="truncate">{usr.Correo || 'Sin Correo'}</span>
                         </div>
                       </div>
+
+                      {/* Boton Editar (Lapiz) */}
+                      <button
+                        onClick={() => setEditingUser(usr)}
+                        className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#e9e9e9] hover:text-[#155dfc] transition-colors shrink-0 shadow-sm border border-gray-100"
+                        title="Editar usuario"
+                      >
+                        <MdEdit className="text-[20px]" />
+                      </button>
                     </div>
                   );
                 })
@@ -124,7 +138,7 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
             {/* Sticky Bottom Area: Invitar Usuario */}
             <div className="absolute bottom-0 left-0 right-0 p-[30px] bg-gradient-to-t from-[#f9f9f9] via-[#f9f9f9] to-transparent">
               <button
-                onClick={() => console.log('Abrir modal de invitar')}
+                onClick={() => setIsInviting(true)}
                 className="w-full bg-[#155dfc] hover:bg-blue-700 transition-colors rounded-[16px] py-[14px] flex justify-center items-center gap-2 shadow-lg hover:shadow-xl"
               >
                 <MdPersonAdd className="text-white text-[24px]" />
@@ -138,5 +152,33 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
         </>
       )}
     </AnimatePresence>
+    
+    <EditarUsuario
+      isOpen={!!editingUser}
+      usuario={editingUser}
+      onClose={() => setEditingUser(null)}
+      onSave={(updated) => {
+        // Here we could add supabase update logic
+        // For now, we simply update the state locally 
+        setUsuarios(prev => prev.map(u => u.ID_Usuario === updated.ID_Usuario ? updated : u));
+        setEditingUser(null);
+      }}
+    />
+
+    <InvitarUsuario
+      isOpen={isInviting}
+      onClose={() => setIsInviting(false)}
+      onInvite={(newUser) => {
+        // En una implementación real, esto haría un insert en Supabase
+        // y se le asignaría un ID. Por ahora, mockeamos el nuevo usuario:
+        const mockedUser = {
+          ...newUser,
+          ID_Usuario: Date.now().toString(),
+        };
+        setUsuarios(prev => [...prev, mockedUser]);
+        setIsInviting(false);
+      }}
+    />
+  </>
   );
 }
