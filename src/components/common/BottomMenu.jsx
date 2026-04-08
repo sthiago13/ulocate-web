@@ -10,8 +10,9 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
-import GestionarEventos from '../GestionarEventos';
+import GestionarAvisos from '../GestionarAvisos';
 import GestionarCategorias from '../GestionarCategorias';
+import GestionarZonas from './GestionarZonas';
 import EditorLugar from './EditorLugar';
 import { supabase } from '../../lib/supabaseClient';
 
@@ -25,8 +26,9 @@ export default function BottomMenu({ className = '' }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
-  const [isGestionarEventosOpen, setIsGestionarEventosOpen] = useState(false);
+  const [isGestionarAvisosOpen, setIsGestionarAvisosOpen] = useState(false);
   const [isGestionarCategoriasOpen, setIsGestionarCategoriasOpen] = useState(false);
+  const [isGestionarZonasOpen, setIsGestionarZonasOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
   const [isGlobalEditorOpen, setIsGlobalEditorOpen] = useState(false);
@@ -70,8 +72,9 @@ export default function BottomMenu({ className = '' }) {
     setIsSearchOpen(false);
     setIsGestionarLugaresOpen(false);
     setIsGestionarUsuariosOpen(false);
-    setIsGestionarEventosOpen(false);
+    setIsGestionarAvisosOpen(false);
     setIsGestionarCategoriasOpen(false);
+    setIsGestionarZonasOpen(false);
     setSelectedUbicacionId(null);
     setIsGlobalEditorOpen(false);
   };
@@ -80,8 +83,8 @@ export default function BottomMenu({ className = '' }) {
     isMenuOpen || isFavoritesOpen || isProfileOpen || isHistoryOpen || 
     isNotificationsOpen || isAdminOpen || isSearchOpen || 
     isGestionarLugaresOpen || isGestionarUsuariosOpen || 
-    isGestionarEventosOpen || isGestionarCategoriasOpen || 
-    selectedUbicacionId || isGlobalEditorOpen
+    isGestionarAvisosOpen || isGestionarCategoriasOpen || 
+    isGestionarZonasOpen || selectedUbicacionId || isGlobalEditorOpen
   );
 
   return (
@@ -174,11 +177,15 @@ export default function BottomMenu({ className = '' }) {
           }}
           onOpenGestionarEventos={() => {
             setIsAdminOpen(false);
-            setIsGestionarEventosOpen(true);
+            setIsGestionarAvisosOpen(true);
           }}
           onOpenGestionarCategorias={() => {
             setIsAdminOpen(false);
             setIsGestionarCategoriasOpen(true);
+          }}
+          onOpenGestionarZonas={() => {
+            setIsAdminOpen(false);
+            setIsGestionarZonasOpen(true);
           }}
         />
       )}
@@ -195,9 +202,14 @@ export default function BottomMenu({ className = '' }) {
         onClose={() => setIsGestionarUsuariosOpen(false)}
       />
 
-      <GestionarEventos
-        isOpen={isGestionarEventosOpen}
-        onClose={() => setIsGestionarEventosOpen(false)}
+      <GestionarAvisos
+        isOpen={isGestionarAvisosOpen}
+        onClose={() => setIsGestionarAvisosOpen(false)}
+      />
+
+      <GestionarZonas
+        isOpen={isGestionarZonasOpen}
+        onClose={() => setIsGestionarZonasOpen(false)}
       />
 
       <GestionarCategorias

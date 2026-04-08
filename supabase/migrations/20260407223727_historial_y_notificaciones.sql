@@ -31,6 +31,8 @@ CREATE TABLE "Historial_Ruta"
         "ID_Admin_Creador" UUID REFERENCES "Usuario"("ID_Usuario"),
         "Titulo" VARCHAR(100) NOT NULL,
         "Mensaje" TEXT NOT NULL,
+        "ID_Ubicacion" INT REFERENCES "Ubicacion"("ID_Ubicacion") ON DELETE SET NULL,
+        -- Relación con el lugar afectado
         "Fecha_Creacion" TIMESTAMP
         WITH TIME ZONE DEFAULT timezone
         ('utc'::text, now
