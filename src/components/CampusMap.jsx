@@ -8,11 +8,12 @@ import L from 'leaflet';
 import geoDataRaw from '../../une.geojson?raw';
 import { getDistance, findShortestPath, closestNode } from '../utils/routeEngine';
 import {
-  getNodes, addNode, saveNodes,
+  getNodes, addNode, deleteNode, saveNodes,
   getEdges, addEdge, saveEdges,
   getUbicaciones, addUbicacion, updateUbicacion, deleteUbicacion,
   saveUbicaciones, getUbicacionByNodeId
 } from '../utils/localDB';
+import { supabase } from '../lib/supabaseClient';
 
 const geoData = JSON.parse(geoDataRaw);
 
@@ -280,12 +281,109 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode, onUbicaci
     return () => watchId && navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // ─── Reload ───────────────────────────────────────────────────────────────
+  // ─── Reload local ─────────────────────────────────────────────────────────
   const reload = () => {
     setNodes(getNodes());
     setEdges(getEdges());
     setUbicaciones(getUbicaciones());
   };
+
+  // ─── Sync inicial desde Supabase ──────────────────────────────────────────
+  // Trae Nodo, Tramo y Ubicacion de la DB y los fusiona con localStorage.
+  // Los objetos traídos de Supabase reciben supabaseId para enlazarlos.
+  useEffect(() => {
+    const syncFromSupabase = async () => {
+      try {
+        const [{ data: nodesDB }, { data: tramosDB }, { data: ubisDB }] = await Promise.all([
+          supabase.from('Nodo').select('*'),
+          supabase.from('Tramo').select('*'),
+          supabase.from('Ubicacion').select('*, Categoria(*)'),
+        ]);
+
+        let localNodes = getNodes();
+        let localEdges = getEdges();
+        let localUbis  = getUbicaciones();
+
+        // ── Nodos ───────────────────────────────────────────────────────────
+        if (nodesDB && nodesDB.length > 0) {
+          const knownSupaIds = new Set(localNodes.map(n => n.supabaseId).filter(Boolean));
+          const nuevosNodos = nodesDB
+            .filter(n => !knownSupaIds.has(n.ID_Nodo))
+            .map(n => ({
+              id:         `node_supa_${n.ID_Nodo}`,
+              lat:        parseFloat(n.Latitud),
+              lng:        parseFloat(n.Longitud),
+              label:      null,
+              supabaseId: n.ID_Nodo,
+            }));
+          if (nuevosNodos.length > 0) {
+            localNodes = [...localNodes, ...nuevosNodos];
+            saveNodes(localNodes);
+          }
+        }
+
+        // ── Tramos ──────────────────────────────────────────────────────────
+        if (tramosDB && tramosDB.length > 0) {
+          const knownTramoIds = new Set(localEdges.map(e => e.supabaseId).filter(Boolean));
+          const nuevosTramos = tramosDB
+            .filter(t => !knownTramoIds.has(t.ID_Tramo))
+            .map(t => {
+              const src = localNodes.find(n => n.supabaseId === t.ID_Nodo_Origen);
+              const tgt = localNodes.find(n => n.supabaseId === t.ID_Nodo_Destino);
+              if (!src || !tgt) return null;
+              return {
+                id:         `${src.id}__${tgt.id}`,
+                source:     src.id,
+                target:     tgt.id,
+                distance:   parseFloat(t.Distancia_Metros),
+                supabaseId: t.ID_Tramo,
+              };
+            })
+            .filter(Boolean);
+          if (nuevosTramos.length > 0) {
+            localEdges = [...localEdges, ...nuevosTramos];
+            saveEdges(localEdges);
+          }
+        }
+
+        // ── Ubicaciones ─────────────────────────────────────────────────────
+        if (ubisDB && ubisDB.length > 0) {
+          const knownUbiIds = new Set(localUbis.map(u => u.supabaseId).filter(Boolean));
+          const nuevasUbis = ubisDB
+            .filter(u => !knownUbiIds.has(u.ID_Ubicacion))
+            .map(u => {
+              const linked = localNodes.find(n => n.supabaseId === u.ID_Nodo);
+              if (!linked) return null;
+              return {
+                id:         `ubi_supa_${u.ID_Ubicacion}`,
+                nodeId:     linked.id,
+                nombre:     u.Nombre,
+                descripcion: u.Descripcion || '',
+                categoria:  u.Categoria?.Nombre_Categoria || '',
+                icono:      '📍',
+                supabaseId: u.ID_Ubicacion,
+              };
+            })
+            .filter(Boolean);
+          if (nuevasUbis.length > 0) {
+            localUbis = [...localUbis, ...nuevasUbis];
+            saveUbicaciones(localUbis);
+            // Etiquetar los nodos con los nombres
+            const nodesConLabel = localNodes.map(n => {
+              const ubi = localUbis.find(u => u.nodeId === n.id);
+              return ubi ? { ...n, label: ubi.nombre } : n;
+            });
+            saveNodes(nodesConLabel);
+          }
+        }
+
+        reload();
+      } catch (err) {
+        console.warn('Aviso sync Supabase→local:', err);
+      }
+    };
+    syncFromSupabase();
+  }, []);
 
   // ─── Evento de ruta desde TarjetaUbicacion ────────────────────────────────
   useEffect(() => {
@@ -399,33 +497,89 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode, onUbicaci
   };
 
   // ─── Admin: clic en mapa ──────────────────────────────────────────────────
-  const handleMapClick = (latlng) => {
+  const handleMapClick = async (latlng) => {
     if (!canAddNodes) {
-      // Opcional: podrías deseleccionar si haces clic fuera
       setSelectedId(null);
       setFormNode(null);
       return;
     }
-    addNode(latlng.lat, latlng.lng);
+    // 1. Crear nodo local
+    const localNode = addNode(latlng.lat, latlng.lng);
+
+    // 2. Sincronizar con Supabase
+    try {
+      const { data: supaNode } = await supabase
+        .from('Nodo')
+        .insert({ Latitud: latlng.lat, Longitud: latlng.lng })
+        .select('ID_Nodo')
+        .single();
+      if (supaNode) {
+        // Guardar supabaseId en el nodo local
+        saveNodes(getNodes().map(n =>
+          n.id === localNode.id ? { ...n, supabaseId: supaNode.ID_Nodo } : n
+        ));
+      }
+    } catch (err) {
+      console.warn('No se pudo sincronizar nodo con Supabase:', err);
+    }
+
     reload();
     setSelectedId(null);
     setFormNode(null);
   };
 
   // ─── Admin: clic en nodo ──────────────────────────────────────────────────
-  const handleNodeClick = (node, e) => {
+  const handleNodeClick = async (node, e) => {
     if (!isRouteAdminMode) return;
     if (e.originalEvent) { e.originalEvent.stopPropagation(); e.originalEvent.preventDefault(); }
 
-    const { selectedId: curr, edges: currEdges, nodes: currNodes } = stateRef.current;
+    if (e.originalEvent && e.originalEvent.detail === 2) {
+      setSelectedId(null);
+      setFormNode(node);
+      return;
+    }
+
+    const { selectedId: curr, nodes: currNodes } = stateRef.current;
+    
+    // Prevent unmounting form on normal clicks if we want to retain it? 
+    // Actually wait, if we are in admin mode, click connects.
     setFormNode(null);
 
     if (!curr) {
       setSelectedId(node.id);
     } else {
+      if (curr === node.id) {
+        // Clic on the same node again: maybe deselect it?
+        setSelectedId(null);
+        return;
+      }
       const src = currNodes.find(n => n.id === curr);
       if (src) {
-        addEdge(curr, node.id, getDistance(src.lat, src.lng, node.lat, node.lng));
+        const dist = getDistance(src.lat, src.lng, node.lat, node.lng);
+        const newEdge = addEdge(curr, node.id, dist);
+
+        // Sincronizar tramo con Supabase si ambos nodos tienen supabaseId
+        if (newEdge && src.supabaseId && node.supabaseId) {
+          try {
+            const { data: supaTramo } = await supabase
+              .from('Tramo')
+              .insert({
+                ID_Nodo_Origen:   src.supabaseId,
+                ID_Nodo_Destino:  node.supabaseId,
+                Distancia_Metros: dist,
+              })
+              .select('ID_Tramo')
+              .single();
+            if (supaTramo) {
+              saveEdges(getEdges().map(e =>
+                e.id === newEdge.id ? { ...e, supabaseId: supaTramo.ID_Tramo } : e
+              ));
+            }
+          } catch (err) {
+            console.warn('No se pudo sincronizar tramo con Supabase:', err);
+          }
+        }
+
         setEdges(getEdges());
       }
       setSelectedId(null);
@@ -439,36 +593,139 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode, onUbicaci
     setFormNode(node);
   };
 
-  const handleSaveUbicacion = (formData) => {
+  const handleSaveUbicacion = async (formData) => {
     const existing = getUbicacionByNodeId(formNode.id);
+    const currentNode = getNodes().find(n => n.id === formNode.id);
+
+    // 1. Save locally
     if (existing) {
       updateUbicacion(existing.id, formData);
       saveNodes(getNodes().map(n => n.id === formNode.id ? { ...n, label: formData.nombre } : n));
     } else {
       addUbicacion({ nodeId: formNode.id, ...formData });
     }
+
+    // 2. Sync to Supabase if node has supabaseId
+    if (currentNode?.supabaseId) {
+      try {
+        // Resolve category name → ID_Categoria
+        const { data: catData } = await supabase
+          .from('Categoria')
+          .select('ID_Categoria')
+          .eq('Nombre_Categoria', formData.categoria)
+          .maybeSingle();
+
+        const payload = {
+          Nombre:        formData.nombre,
+          Descripcion:   formData.descripcion || null,
+          Acceso_Publico: true,
+          ID_Categoria:  catData?.ID_Categoria || 1,
+          ID_Nodo:       currentNode.supabaseId,
+        };
+
+        if (existing?.supabaseId) {
+          // UPDATE existing Ubicacion
+          await supabase
+            .from('Ubicacion')
+            .update(payload)
+            .eq('ID_Ubicacion', existing.supabaseId);
+        } else {
+          // INSERT new Ubicacion, store supabaseId back
+          const { data: supaUbi } = await supabase
+            .from('Ubicacion')
+            .insert(payload)
+            .select('ID_Ubicacion')
+            .single();
+          if (supaUbi) {
+            const newUbi = getUbicacionByNodeId(formNode.id);
+            if (newUbi) {
+              saveUbicaciones(getUbicaciones().map(u =>
+                u.id === newUbi.id ? { ...u, supabaseId: supaUbi.ID_Ubicacion } : u
+              ));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('No se pudo sincronizar ubicación con Supabase:', err);
+      }
+    }
+
     reload();
     setFormNode(null);
   };
 
-  const handleDeleteUbicacion = () => {
+  const handleDeleteUbicacion = async () => {
     const existing = getUbicacionByNodeId(formNode.id);
-    if (existing) deleteUbicacion(existing.id);
+    if (existing) {
+      // Borrar de Supabase si está sincronizado
+      if (existing.supabaseId) {
+        try {
+          await supabase.from('Ubicacion_Guardada').delete().eq('ID_Ubicacion', existing.supabaseId);
+          await supabase.from('Referencias_Visuales').delete().eq('ID_Ubicacion', existing.supabaseId);
+          await supabase.from('Ubicacion').delete().eq('ID_Ubicacion', existing.supabaseId);
+        } catch (err) {
+          console.warn('No se pudo eliminar ubicación de Supabase:', err);
+        }
+      }
+      deleteUbicacion(existing.id);
+    }
     reload();
     setFormNode(null);
   };
 
-  const handleDeleteNode = () => {
+  const handleDeleteNode = async () => {
     if (!confirm('¿Eliminar este nodo y todas sus conexiones?')) return;
+    const currentNode = getNodes().find(n => n.id === formNode.id);
+    const ubiLocal    = getUbicacionByNodeId(formNode.id);
+
+    // Borrar de Supabase en cascade
+    if (currentNode?.supabaseId) {
+      try {
+        // Borrar ubicación si existe
+        if (ubiLocal?.supabaseId) {
+          await supabase.from('Ubicacion_Guardada').delete().eq('ID_Ubicacion', ubiLocal.supabaseId);
+          await supabase.from('Referencias_Visuales').delete().eq('ID_Ubicacion', ubiLocal.supabaseId);
+          await supabase.from('Ubicacion').delete().eq('ID_Ubicacion', ubiLocal.supabaseId);
+        }
+        // Borrar tramos conectados
+        await supabase.from('Tramo')
+          .delete()
+          .or(`ID_Nodo_Origen.eq.${currentNode.supabaseId},ID_Nodo_Destino.eq.${currentNode.supabaseId}`);
+        // Borrar nodo
+        await supabase.from('Nodo').delete().eq('ID_Nodo', currentNode.supabaseId);
+      } catch (err) {
+        console.warn('No se pudo eliminar nodo de Supabase:', err);
+      }
+    }
+
     deleteNode(formNode.id);
-    // Limpiar rutas activas si incluían este nodo
     cancelRoute();
     reload();
     setFormNode(null);
   };
 
-  const handleClearAll = () => {
-    if (!confirm('¿Borrar todos los nodos, tramos y lugares?')) return;
+  const handleClearAll = async () => {
+    if (!confirm('¿Borrar todos los nodos, tramos y lugares? Esto también los eliminará de la base de datos.')) return;
+
+    // Borrar de Supabase los que tengan supabaseId
+    try {
+      const localUbis  = getUbicaciones().filter(u => u.supabaseId);
+      const localNodes = getNodes().filter(n => n.supabaseId);
+      for (const u of localUbis) {
+        await supabase.from('Ubicacion_Guardada').delete().eq('ID_Ubicacion', u.supabaseId);
+        await supabase.from('Referencias_Visuales').delete().eq('ID_Ubicacion', u.supabaseId);
+        await supabase.from('Ubicacion').delete().eq('ID_Ubicacion', u.supabaseId);
+      }
+      for (const n of localNodes) {
+        await supabase.from('Tramo')
+          .delete()
+          .or(`ID_Nodo_Origen.eq.${n.supabaseId},ID_Nodo_Destino.eq.${n.supabaseId}`);
+        await supabase.from('Nodo').delete().eq('ID_Nodo', n.supabaseId);
+      }
+    } catch (err) {
+      console.warn('No se pudo limpiar Supabase:', err);
+    }
+
     saveNodes([]); saveEdges([]); saveUbicaciones([]);
     reload();
     setSelectedId(null); setFormNode(null); cancelRoute();

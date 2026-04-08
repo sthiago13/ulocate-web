@@ -25,7 +25,7 @@ export default function EditorLugar({ isOpen, onClose, lugar, onSaved }) {
       Promise.all([
         supabase.from('Categoria').select('*'),
         supabase.from('Zona').select('*'),
-        supabase.from('Nodo').select('ID_Nodo, Nombre_Nodo')
+        supabase.from('Nodo').select('ID_Nodo')
       ]).then(([catRes, zonRes, nodRes]) => {
         setMetadata({
           categorias: catRes.data || [],
@@ -231,7 +231,7 @@ export default function EditorLugar({ isOpen, onClose, lugar, onSaved }) {
                 >
                   <option value="">Selecciona ID de nodo del mapa...</option>
                   {metadata.nodos.map(n => (
-                    <option key={n.ID_Nodo} value={n.ID_Nodo}>{n.Nombre_Nodo || n.ID_Nodo.slice(0, 8)}</option>
+                    <option key={n.ID_Nodo} value={n.ID_Nodo}>Nodo_ID: {n.ID_Nodo.toString().slice(0, 8)}</option>
                   ))}
                 </select>
                 <p className="text-[12px] text-gray-500 mt-[-5px]">Si no ves un nodo para el lugar, debes trazar un nodo nuevo en Trazar Rutas primero.</p>

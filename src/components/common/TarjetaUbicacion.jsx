@@ -172,13 +172,13 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
 
   const handleTrazarRuta = () => {
     if (ubicacion && (ubicacion.ID_Nodo || ubicacion.nodeId)) {
-      const startTracerEvent = new CustomEvent('trazar-ruta-destination', { 
-        detail: { 
-          nodeId: ubicacion.ID_Nodo || ubicacion.nodeId, 
-          label: ubicacion.Nombre 
-        } 
-      });
-      window.dispatchEvent(startTracerEvent);
+      const ubiTarget = {
+        nodeId: ubicacion.ID_Nodo || ubicacion.nodeId,
+        Nombre: ubicacion.Nombre
+      };
+      // Usar localStorage y despachar el evento que CampusMap escucha
+      localStorage.setItem('active_route_target', JSON.stringify(ubiTarget));
+      window.dispatchEvent(new Event('route_triggered'));
       onClose(); // Cerrar la tarjeta para ver el mapa
     } else {
       alert("No se puede trazar ruta: Esta ubicación no está asociada a un nodo del mapa.");
