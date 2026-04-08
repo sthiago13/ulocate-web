@@ -4,11 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import SearchBar from './SearchBar';
 import Spinner from './Spinner';
+import EditarUsuario from './EditarUsuario';
+import InvitarUsuario from './InvitarUsuario';
 
 export default function GestionarUsuarios({ isOpen, onClose }) {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingUser, setEditingUser] = useState(null);
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -162,22 +166,13 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
                         {/* Action Button */}
                         <div className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() => console.log('Editar', usr.ID_Usuario)}
+                            onClick={() => setEditingUser(usr)}
                             className="w-10 h-10 rounded-full bg-blue-50 text-[#155dfc] flex items-center justify-center hover:bg-[#155dfc] hover:text-white transition-colors"
                             title="Editar usuario"
                           >
                             <MdEdit className="text-[20px]" />
                           </button>
                         </div>
-
-                        {/* Boton Editar (Lapiz) */}
-                        <button
-                          onClick={() => setEditingUser(usr)}
-                          className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-[#e9e9e9] hover:text-[#155dfc] transition-colors shrink-0 shadow-sm border border-gray-100"
-                          title="Editar usuario"
-                        >
-                          <MdEdit className="text-[20px]" />
-                        </button>
                       </div>
                     );
                   })
@@ -187,7 +182,7 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
               {/* Sticky Bottom Area: Invitar Usuario */}
               <div className="absolute bottom-0 left-0 right-0 p-[30px] bg-gradient-to-t from-[#f9f9f9] via-[#f9f9f9] to-transparent pointer-events-none">
                 <button
-                  onClick={() => console.log('Abrir modal de invitar')}
+                  onClick={() => setIsInviting(true)}
                   className="w-full bg-[#155dfc] hover:bg-blue-700 transition-colors rounded-[16px] py-[14px] flex justify-center items-center gap-2 shadow-lg hover:shadow-xl pointer-events-auto"
                 >
                   <MdPersonAdd className="text-white text-[24px]" />
