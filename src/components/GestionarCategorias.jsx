@@ -175,9 +175,17 @@ export default function GestionarCategorias({ isOpen, onClose }) {
       <CrearCategoria
         isOpen={isCreating}
         onClose={() => setIsCreating(false)}
-        onCreate={(newCat) => {
-          const catCreada = { ...newCat, ID_Categoria: Date.now() };
-          setCategorias(prev => [...prev, catCreada]);
+        onCreate={async (newCat) => {
+          try {
+            const { data, error } = await supabase
+              .from('Categoria')
+              .insert(newCat)
+              .select()
+              .single();
+            if (data) {
+              setCategorias(prev => [...prev, data].sort((a,b) => a.Nombre_Categoria.localeCompare(b.Nombre_Categoria)));
+            }
+          } catch(err) { console.error('Error insertando categoria', err); }
           setIsCreating(false);
         }}
       />
@@ -186,8 +194,21 @@ export default function GestionarCategorias({ isOpen, onClose }) {
         isOpen={!!editingCategory}
         categoria={editingCategory}
         onClose={() => setEditingCategory(null)}
-        onSave={(updatedCat) => {
-          setCategorias(prev => prev.map(c => c.ID_Categoria === updatedCat.ID_Categoria ? updatedCat : c));
+        onSave={async (updatedCat) => {
+          try {
+            const { data, error } = await supabase
+              .from('Categoria')
+              .update({
+                Nombre_Categoria: updatedCat.Nombre_Categoria,
+                Icono: updatedCat.Icono
+              })
+              .eq('ID_Categoria', updatedCat.ID_Categoria)
+              .select()
+              .single();
+            if (data) {
+              setCategorias(prev => prev.map(c => c.ID_Categoria === updatedCat.ID_Categoria ? data : c));
+            }
+          } catch(err) { console.error('Error actualizando categoria', err); }
           setEditingCategory(null);
         }}
       />

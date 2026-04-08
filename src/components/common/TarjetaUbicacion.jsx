@@ -35,10 +35,16 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
     const fetchAll = async () => {
       setLoading(true);
       
+      let targetId = ubicacionId;
+
       // 1. Detección de ID LOCAL
       if (typeof ubicacionId === 'string' && ubicacionId.startsWith('ubi_')) {
         const localData = getUbicaciones().find(u => u.id === ubicacionId);
-        if (localData) {
+        if (localData && localData.supabaseId) {
+          // It's synced with Supabase, switch the targetId to Supabase ID and continue
+          targetId = localData.supabaseId;
+        } else if (localData) {
+          // Local only, no Supabase sync yet
           setUbicacion({
             ID_Ubicacion: localData.id,
             Nombre: localData.nombre,
@@ -59,16 +65,16 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
         const { data: ubiData } = await supabase
           .from('Ubicacion')
           .select(`*, Categoria (*), Zona (*)`)
-          .eq('ID_Ubicacion', ubicacionId)
+          .eq('ID_Ubicacion', targetId)
           .single();
           
         if (ubiData) {
           setUbicacion(ubiData);
-          const { data: imgData } = await supabase.from('Referencias_Visuales').select('URL_Imagen').eq('ID_Ubicacion', ubicacionId);
+          const { data: imgData } = await supabase.from('Referencias_Visuales').select('URL_Imagen').eq('ID_Ubicacion', targetId);
           if (imgData) setImagenes(imgData.map(i => i.URL_Imagen).filter(url => url));
 
           if (currentUser) {
-            const { data: favData } = await supabase.from('Ubicacion_Guardada').select('ID_Guardado').eq('ID_Usuario', currentUser.id).eq('ID_Ubicacion', ubicacionId).maybeSingle();
+            const { data: favData } = await supabase.from('Ubicacion_Guardada').select('ID_Guardado').eq('ID_Usuario', currentUser.id).eq('ID_Ubicacion', targetId).maybeSingle();
             if (favData) { setIsFavorite(true); setFavoriteId(favData.ID_Guardado); }
           }
         }
@@ -98,7 +104,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
     if (isFavorite) { setModalType('confirm_delete'); setShowModal(true); } 
     else {
       const { data, error } = await supabase.from('Ubicacion_Guardada').insert({
-        ID_Usuario: user.id, ID_Ubicacion: ubicacionId, Titulo_Guardado: ubicacion.Nombre
+        ID_Usuario: user.id, ID_Ubicacion: ubicacion.ID_Ubicacion, Titulo_Guardado: ubicacion.Nombre
       }).select('ID_Guardado').single();
       if (!error && data) {
         setIsFavorite(true); setFavoriteId(data.ID_Guardado);
