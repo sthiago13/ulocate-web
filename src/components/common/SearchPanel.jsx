@@ -37,15 +37,14 @@ export default function SearchPanel({ onClose }) {
     return matchSearch && matchCategory;
   });
 
-  // Si hay ubicación seleccionada, mostrar tarjeta de detalle
-  if (selectedUbi) {
-    return (
-      <TarjetaUbicacion
-        ubicacion={selectedUbi}
-        onClose={() => { setSelectedUbi(null); onClose(); }}
-      />
-    );
-  }
+  // Cuando se selecciona un resultado, disparamos el evento global y cerramos el buscador
+  const handleSelectRes = (res) => {
+    window.dispatchEvent(new CustomEvent('select_location', { 
+      detail: { id: res.id || res.ID_Ubicacion } 
+    }));
+    onClose();
+  };
+
 
   return createPortal(
     <>
@@ -82,7 +81,7 @@ export default function SearchPanel({ onClose }) {
                 title={res.nombre}
                 subtitle={res.categoria}
                 icon={<span className="text-[22px]">{CATEGORY_ICONS[res.categoria] || '📍'}</span>}
-                onClick={() => setSelectedUbi(res)}
+                onClick={() => handleSelectRes(res)}
               />
             ))
           ) : (

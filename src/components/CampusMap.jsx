@@ -47,9 +47,8 @@ function MapClickInterceptor({ isAdminMode, onMapClick }) {
   useMapEvents({ click(e) { if (isAdminMode) onMapClick(e.latlng); } });
   return null;
 }
-
 // ── Formulario inline: asignar Lugar a Nodo ──────────────────────────────────
-function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
+function NodeLugarForm({ node, existingUbi, onSave, onDeleteUbi, onDeleteNode, onCancel }) {
   const [form, setForm] = useState({
     nombre:      existingUbi?.nombre      || '',
     descripcion: existingUbi?.descripcion || '',
@@ -62,7 +61,7 @@ function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
   return (
     <div
       style={{ zIndex: 9999 }}
-      className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[340px] max-w-[92vw] bg-white rounded-2xl shadow-2xl p-5 border border-blue-100"
+      className="fixed top-24 right-4 w-[340px] max-w-[92vw] bg-white rounded-2xl shadow-2xl p-5 border border-blue-100"
       onClick={e => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-3">
@@ -80,11 +79,14 @@ function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
           {CATS.map(c => <option key={c}>{c}</option>)}
         </select>
         <textarea name="descripcion" value={form.descripcion} onChange={change} placeholder="Descripción..." rows={2} className="border border-gray-200 rounded-lg px-3 py-2 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <div className="flex gap-2">
-          <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 text-[14px] font-semibold">Guardar</button>
-          {existingUbi && (
-            <button type="button" onClick={onDelete} className="px-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2 text-[14px] font-semibold">Eliminar</button>
-          )}
+        <div className="flex flex-col gap-2">
+          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 text-[14px] font-semibold">Guardar Lugar</button>
+          <div className="flex gap-2 w-full">
+            {existingUbi && (
+              <button type="button" onClick={onDeleteUbi} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2 text-[13px] font-medium">Borrar Lugar</button>
+            )}
+            <button type="button" onClick={onDeleteNode} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl py-2 text-[13px] font-medium">Eliminar Nodo</button>
+          </div>
         </div>
       </form>
       <p className="text-[11px] text-gray-400 mt-2 text-center">Lat: {node.lat.toFixed(5)} · Lng: {node.lng.toFixed(5)}</p>
@@ -93,27 +95,40 @@ function NodeLugarForm({ node, existingUbi, onSave, onDelete, onCancel }) {
 }
 
 // ── Panel lateral admin ───────────────────────────────────────────────────────
-function AdminSidePanel({ nodeCount, edgeCount, onClear, onClose }) {
+function AdminSidePanel({ nodeCount, edgeCount, onClear, onClose, canAddNodes, setCanAddNodes }) {
   return (
     <div style={{ zIndex: 9999 }} className="fixed top-20 right-4 w-[220px] bg-white rounded-2xl shadow-xl p-4 border border-blue-100">
       <div className="flex justify-between items-center mb-3">
         <span className="font-bold text-[15px] text-blue-700">🛣️ Modo Editor</span>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-lg">✕</button>
       </div>
+
+      <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3 mb-3 cursor-pointer" onClick={() => setCanAddNodes(!canAddNodes)}>
+        <span className="text-[13px] font-medium text-gray-700">Crear Nodos</span>
+        <div className={`w-10 h-5 rounded-full transition-colors relative ${canAddNodes ? 'bg-blue-600' : 'bg-gray-300'}`}>
+          <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${canAddNodes ? 'translate-x-5' : ''}`} />
+        </div>
+      </div>
+
       <div className="text-[13px] text-gray-600 space-y-1 mb-4">
         <p>📌 <b className="text-gray-800">{nodeCount}</b> nodos</p>
         <p>🔗 <b className="text-gray-800">{edgeCount}</b> conexiones</p>
       </div>
       <div className="text-[12px] text-gray-500 bg-blue-50 rounded-xl p-3 space-y-1 mb-3">
-        <p>• <b>Clic en mapa</b> → crear nodo</p>
-        <p>• <b>Clic nodo</b> → seleccionar (🔴)</p>
-        <p>• <b>2° clic nodo distinto</b> → conectar</p>
-        <p>• <b>Clic nodo seleccionado</b> → asignar lugar</p>
+        {canAddNodes ? (
+          <p className="text-blue-700 font-medium animate-pulse">• Clic en mapa para añadir</p>
+        ) : (
+          <p>• Activa el interruptor para añadir</p>
+        )}
+        <p>• <b>Clic nodo</b> → Seleccionar</p>
+        <p>• <b>2° clic otro</b> → Conectar</p>
+        <p>• <b>2° clic mismo</b> → Editar/Borrar</p>
       </div>
       <button onClick={onClear} className="w-full bg-red-50 hover:bg-red-100 text-red-600 rounded-xl py-2 text-[13px] font-medium">🗑️ Limpiar todo</button>
     </div>
   );
 }
+
 
 // ── Panel de Navegación activa ──────────────────────────────────────────────
 function NavigationPanel({ destination, distanceRemaining, totalDistance, onCancel, arrived }) {
@@ -201,7 +216,7 @@ function ArrivalToast({ destination, onDismiss }) {
 }
 
 // ── CampusMap (principal) ──────────────────────────────────────────────────────
-export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
+export default function CampusMap({ isRouteAdminMode, onExitAdminMode, onUbicacionSelect }) {
   const campusCenter = [7.794, -72.198];
   const campusBounds = [[7.785, -72.210], [7.805, -72.185]];
 
@@ -218,7 +233,8 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
   const [totalDistance,     setTotalDistance]     = useState(0);    // metros total
   const [distRemaining,     setDistRemaining]     = useState(0);    // metros restantes
   const [arrived,           setArrived]           = useState(false);
-  const [showArrivalToast,  setShowArrivalToast]  = useState(false);
+  const [showArrivalToast, setShowArrivalToast] = useState(false);
+  const [canAddNodes, setCanAddNodes] = useState(false); // Nuevo estado para seguridad
 
   // GPS
   const [userPosition, setUserPosition] = useState(null);
@@ -384,6 +400,12 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
 
   // ─── Admin: clic en mapa ──────────────────────────────────────────────────
   const handleMapClick = (latlng) => {
+    if (!canAddNodes) {
+      // Opcional: podrías deseleccionar si haces clic fuera
+      setSelectedId(null);
+      setFormNode(null);
+      return;
+    }
     addNode(latlng.lat, latlng.lng);
     reload();
     setSelectedId(null);
@@ -400,9 +422,6 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
 
     if (!curr) {
       setSelectedId(node.id);
-    } else if (curr === node.id) {
-      setSelectedId(null);
-      setFormNode(node);
     } else {
       const src = currNodes.find(n => n.id === curr);
       if (src) {
@@ -411,6 +430,13 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
       }
       setSelectedId(null);
     }
+  };
+
+  const handleNodeDoubleClick = (node, e) => {
+    if (!isRouteAdminMode) return;
+    if (e.originalEvent) { e.originalEvent.stopPropagation(); e.originalEvent.preventDefault(); }
+    setSelectedId(null);
+    setFormNode(node);
   };
 
   const handleSaveUbicacion = (formData) => {
@@ -428,6 +454,15 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
   const handleDeleteUbicacion = () => {
     const existing = getUbicacionByNodeId(formNode.id);
     if (existing) deleteUbicacion(existing.id);
+    reload();
+    setFormNode(null);
+  };
+
+  const handleDeleteNode = () => {
+    if (!confirm('¿Eliminar este nodo y todas sus conexiones?')) return;
+    deleteNode(formNode.id);
+    // Limpiar rutas activas si incluían este nodo
+    cancelRoute();
     reload();
     setFormNode(null);
   };
@@ -452,6 +487,8 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
               edgeCount={edges.length}
               onClear={handleClearAll}
               onClose={onExitAdminMode}
+              canAddNodes={canAddNodes}
+              setCanAddNodes={setCanAddNodes}
             />
           )}
 
@@ -461,7 +498,8 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
               node={formNode}
               existingUbi={getUbicacionByNodeId(formNode.id)}
               onSave={handleSaveUbicacion}
-              onDelete={handleDeleteUbicacion}
+              onDeleteUbi={handleDeleteUbicacion}
+              onDeleteNode={handleDeleteNode}
               onCancel={() => setFormNode(null)}
             />
           )}
@@ -574,7 +612,10 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
                 fillColor:   isSel ? '#ef4444' : (hasPlace ? '#22c55e' : '#818cf8'),
                 fillOpacity: 1, weight: 2,
               }}
-              eventHandlers={{ click: e => handleNodeClick(node, e) }}
+              eventHandlers={{ 
+                click: e => handleNodeClick(node, e),
+                dblclick: e => handleNodeDoubleClick(node, e)
+              }}
             >
               <Popup>
                 <b>{node.label || 'Nodo sin nombre'}</b><br />
@@ -593,13 +634,18 @@ export default function CampusMap({ isRouteAdminMode, onExitAdminMode }) {
             iconSize: [34, 34], iconAnchor: [17, 17], className: ''
           });
           return (
-            <Marker key={ubi.id} position={[node.lat, node.lng]} icon={icon}>
-              <Popup>
-                <strong style={{ fontSize: 14 }}>{ubi.icono} {ubi.nombre}</strong><br />
-                <em style={{ color: '#6b7280', fontSize: 12 }}>{ubi.categoria}</em><br />
-                {ubi.descripcion && <span style={{ fontSize: 13 }}>{ubi.descripcion}</span>}
-              </Popup>
-            </Marker>
+            <Marker 
+              key={ubi.id} 
+              position={[node.lat, node.lng]} 
+              icon={icon}
+              eventHandlers={{
+                click: () => {
+                  if (!isRouteAdminMode && onUbicacionSelect) {
+                    onUbicacionSelect(ubi.id);
+                  }
+                }
+              }}
+            />
           );
         })}
 
