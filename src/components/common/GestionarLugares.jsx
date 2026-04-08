@@ -92,9 +92,14 @@ export default function GestionarLugares({ isOpen, onClose, onLocationSelect }) 
           >
             {/* Header Fijo */}
             <div className="flex items-center justify-between w-full p-[30px] pb-[20px] bg-white shrink-0 shadow-sm z-10">
-              <div className="flex flex-col font-['Plus_Jakarta_Sans']">
-                <span className="font-bold text-[24px] text-[#101828] leading-[30px]">Gestionar Lugares</span>
-                <span className="text-[#667085] text-[14px]">Administra el directorio de sitios</span>
+              <div className="flex gap-[15px] items-center">
+                <div className="bg-[#e8f0fe] flex items-center justify-center rounded-[100px] w-[50px] h-[50px] shrink-0">
+                  <MdIcons.MdPlace className="text-[#155dfc] text-[28px]" />
+                </div>
+                <div className="flex flex-col font-['Plus_Jakarta_Sans']">
+                  <span className="font-bold text-[20px] text-[#101828] leading-[26px]">Gestionar Lugares</span>
+                  <span className="font-medium text-gray-500 text-[14px]">Administra el directorio de sitios</span>
+                </div>
               </div>
               <button
                 onClick={onClose}

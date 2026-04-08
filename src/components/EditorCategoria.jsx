@@ -1,29 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { MdClose, MdEdit, MdSave } from 'react-icons/md';
+import { MdClose, MdCategory, MdEdit, MdSave, MdSend } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputField from './common/InputField';
+import IconPicker from './common/IconPicker';
 import Button from './common/Button';
 
-export default function EditarCategoria({ isOpen, onClose, categoria, onSave }) {
+export default function EditorCategoria({ isOpen, onClose, categoriaToEdit, onSave }) {
   const [nombre, setNombre] = useState('');
   const [icono, setIcono] = useState('');
 
-  useEffect(() => {
-    if (categoria && isOpen) {
-      setNombre(categoria.Nombre_Categoria || '');
-      setIcono(categoria.Icono || '');
-    }
-  }, [categoria, isOpen]);
+  const isEditing = !!categoriaToEdit;
 
-  const handleSave = () => {
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditing) {
+        setNombre(categoriaToEdit.Nombre_Categoria || '');
+        setIcono(categoriaToEdit.Icono || '');
+      } else {
+        setNombre('');
+        setIcono('');
+      }
+    }
+  }, [isOpen, categoriaToEdit, isEditing]);
+
+  const handleSubmit = () => {
     if (!nombre.trim()) return;
 
-    const updatedCat = {
-      ...categoria,
+    const catData = {
       Nombre_Categoria: nombre,
       Icono: icono || 'MdCategory',
     };
-    if (onSave) onSave(updatedCat);
+
+    if (isEditing) {
+      catData.ID_Categoria = categoriaToEdit.ID_Categoria;
+    }
+
+    if (onSave) onSave(catData);
   };
 
   if (!isOpen) return null;
@@ -53,13 +65,19 @@ export default function EditarCategoria({ isOpen, onClose, categoria, onSave }) 
             <div className="flex items-center justify-between w-full mb-[30px]">
               <div className="flex gap-[15px] items-center">
                 <div className="bg-amber-100 flex items-center justify-center rounded-full w-[50px] h-[50px] shrink-0">
-                  <MdEdit className="text-amber-600 text-[28px]" />
+                  {isEditing ? (
+                    <MdEdit className="text-amber-600 text-[28px]" />
+                  ) : (
+                    <MdCategory className="text-amber-600 text-[28px]" />
+                  )}
                 </div>
                 <div className="flex flex-col font-['Plus_Jakarta_Sans']">
                   <span className="font-bold text-[#101828] text-[20px] leading-[26px] truncate max-w-[200px]">
-                    {categoria?.Nombre_Categoria || 'Categoría'}
+                    {isEditing ? (categoriaToEdit?.Nombre_Categoria || 'Categoría') : 'Nueva Categoría'}
                   </span>
-                  <span className="font-semibold text-amber-600 text-[14px]">Editando categoría</span>
+                  <span className="font-semibold text-amber-600 text-[14px]">
+                    {isEditing ? 'Editando categoría' : 'Agregando sección'}
+                  </span>
                 </div>
               </div>
               <button
@@ -79,22 +97,18 @@ export default function EditarCategoria({ isOpen, onClose, categoria, onSave }) 
                 placeholder="Ej. Académico, Recreación..."
               />
 
-              <InputField
-                label="Nombre del Ícono (Opcional)"
-                value={icono}
-                onChange={(e) => setIcono(e.target.value)}
-                placeholder="Ej. MdSchool, MdRestaurant..."
+              <IconPicker
+                label="Ícono de Categoría"
+                iconoActual={icono}
+                onChange={setIcono}
               />
-              <p className="text-[12px] text-gray-500 -mt-2 ml-1">
-                Utiliza nombres de Material Design Icons (react-icons/md).
-              </p>
             </div>
 
             {/* Bottom Actions */}
             <div className="mt-auto pt-[30px]">
-              <Button onClick={handleSave} className="!text-[16px] !font-semibold !h-[55px] font-['Plus_Jakarta_Sans'] bg-[#101828] hover:bg-black border-none text-white shadow-lg flex justify-center items-center gap-2">
-                <MdSave className="text-white text-[24px]" />
-                Guardar Cambios
+              <Button onClick={handleSubmit} className="!text-[16px] !font-semibold !h-[55px] font-['Plus_Jakarta_Sans'] bg-[#101828] hover:bg-black border-none text-white shadow-lg flex justify-center items-center gap-2">
+                {isEditing ? <MdSave className="text-white text-[24px]" /> : <MdSend className="text-white text-[20px]" />}
+                {isEditing ? 'Guardar Cambios' : 'Agregar Categoría'}
               </Button>
             </div>
 

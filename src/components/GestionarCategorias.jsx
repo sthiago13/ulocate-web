@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { MdClose, MdCategory, MdEdit, MdAdd } from 'react-icons/md';
+import { MdClose, MdCategory, MdEdit, MdAdd, MdDelete } from 'react-icons/md';
 import * as mdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import SearchBar from './common/SearchBar';
 import Spinner from './common/Spinner';
-import CrearCategoria from './CrearCategoria';
-import EditarCategoria from './EditarCategoria';
+import ModalConfirmacion from './common/ModalConfirmacion';
+import EditorCategoria from './EditorCategoria';
 
 export default function GestionarCategorias({ isOpen, onClose }) {
   const [categorias, setCategorias] = useState([]);
@@ -15,33 +15,38 @@ export default function GestionarCategorias({ isOpen, onClose }) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
+  const [deleteConf, setDeleteConf] = useState({ phase: 0, item: null });
+
+  const fetchCategorias = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('Categoria')
+      .select('*')
+      .order('Nombre_Categoria', { ascending: true })
+      .limit(50);
+
+    if (data) setCategorias(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (isOpen) {
-      const fetchCategorias = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('Categoria')
-          .select('*')
-          .order('Nombre_Categoria', { ascending: true })
-          .limit(50);
-
-        if (data && data.length > 0) {
-          setCategorias(data);
-        } else {
-          // Datos mock
-          setCategorias([
-            { ID_Categoria: 1, Nombre_Categoria: "Académico", Icono: "MdSchool" },
-            { ID_Categoria: 2, Nombre_Categoria: "Alimentación", Icono: "MdRestaurant" },
-            { ID_Categoria: 3, Nombre_Categoria: "Servicios", Icono: "MdLocalPrintshop" },
-            { ID_Categoria: 4, Nombre_Categoria: "Administrativo", Icono: "MdBusinessCenter" },
-          ]);
-        }
-        setLoading(false);
-      };
-
       fetchCategorias();
     }
   }, [isOpen]);
+
+  const performDelete = async () => {
+    const target = deleteConf.item;
+    if (target) {
+      const { error } = await supabase.from('Categoria').delete().eq('ID_Categoria', target.ID_Categoria);
+      if (!error) {
+         setCategorias(prev => prev.filter(c => c.ID_Categoria !== target.ID_Categoria));
+      } else {
+         console.error("Error al eliminar categoría", error);
+      }
+    }
+    setDeleteConf({ phase: 0, item: null });
+  };
 
   if (!isOpen && !isCreating && !editingCategory) return null;
 
@@ -136,14 +141,21 @@ export default function GestionarCategorias({ isOpen, onClose }) {
                           </span>
                         </div>
 
-                        {/* Boton Editar (Lapiz) */}
-                        <div className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        {/* Acciones */}
+                        <div className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-2">
                           <button
                             onClick={() => setEditingCategory(cat)}
                             className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition-colors"
                             title="Editar categoría"
                           >
                             <MdEdit className="text-[20px]" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConf({ phase: 1, item: cat })}
+                            className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors"
+                            title="Eliminar categoría"
+                          >
+                            <MdDelete className="text-[20px]" />
                           </button>
                         </div>
                       </div>
@@ -170,25 +182,63 @@ export default function GestionarCategorias({ isOpen, onClose }) {
         )}
       </AnimatePresence>
 
-      {/* Modales Secundarios */}
-      <CrearCategoria
-        isOpen={isCreating}
-        onClose={() => setIsCreating(false)}
-        onCreate={(newCat) => {
-          const catCreada = { ...newCat, ID_Categoria: Date.now() };
-          setCategorias(prev => [...prev, catCreada]);
-          setIsCreating(false);
+      {/* Modal Unified Editor */}
+      <EditorCategoria
+        isOpen={isCreating || !!editingCategory}
+        onClose={() => {
+           setIsCreating(false);
+           setEditingCategory(null);
+        }}
+        categoriaToEdit={editingCategory}
+        onSave={async (catData) => {
+          if (editingCategory) {
+             // UPDATE
+             const { error } = await supabase.from('Categoria').update({
+                Nombre_Categoria: catData.Nombre_Categoria,
+                Icono: catData.Icono
+             }).eq('ID_Categoria', catData.ID_Categoria);
+             
+             if (!error) {
+                setCategorias(prev => prev.map(c => c.ID_Categoria === catData.ID_Categoria ? catData : c));
+                setEditingCategory(null);
+             }
+          } else {
+             // INSERT
+             const { data, error } = await supabase.from('Categoria').insert(catData).select();
+             if (!error && data) {
+                setCategorias(prev => [...prev, data[0]]);
+                setIsCreating(false);
+             }
+          }
         }}
       />
+      
+      {/* Modal Primer Confirmacion Delete */}
+      <ModalConfirmacion
+        isOpen={deleteConf.phase === 1}
+        onClose={() => setDeleteConf({ phase: 0, item: null })}
+        onConfirm={() => setDeleteConf(prev => ({ ...prev, phase: 2 }))}
+        titulo="Eliminar Categoría"
+        mensaje={(
+          <span>
+            ¿Estás seguro que deseas eliminar la categoría <strong>{deleteConf.item?.Nombre_Categoria}</strong>?
+          </span>
+        )}
+        textoConfirmar="Siguiente"
+        textoCancelar="Cancelar"
+        colorConfirmar="bg-red-600 hover:bg-red-700"
+      />
 
-      <EditarCategoria
-        isOpen={!!editingCategory}
-        categoria={editingCategory}
-        onClose={() => setEditingCategory(null)}
-        onSave={(updatedCat) => {
-          setCategorias(prev => prev.map(c => c.ID_Categoria === updatedCat.ID_Categoria ? updatedCat : c));
-          setEditingCategory(null);
-        }}
+      {/* Modal Segunda Confirmacion Delete */}
+      <ModalConfirmacion
+        isOpen={deleteConf.phase === 2}
+        onClose={() => setDeleteConf({ phase: 0, item: null })}
+        onConfirm={performDelete}
+        titulo="Confirmación Definitiva"
+        mensaje="Al eliminar una categoría, podrías afectar las ubicaciones que actualmente dependen de ella. Esta acción no se puede deshacer. ¿Deseas eliminarla permanentemente?"
+        textoConfirmar="Borrar Definitivamente"
+        textoCancelar="Cancelar"
+        colorConfirmar="bg-red-600 hover:bg-red-700"
       />
     </>
   );

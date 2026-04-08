@@ -12,6 +12,7 @@ import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
 import GestionarEventos from '../GestionarEventos';
 import GestionarCategorias from '../GestionarCategorias';
+import EditorLugar from './EditorLugar';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '' }) {
@@ -28,6 +29,8 @@ export default function BottomMenu({ className = '' }) {
   const [isGestionarCategoriasOpen, setIsGestionarCategoriasOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
+  const [isGlobalEditorOpen, setIsGlobalEditorOpen] = useState(false);
+  const [globalLugarToEdit, setGlobalLugarToEdit] = useState(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -186,8 +189,27 @@ export default function BottomMenu({ className = '' }) {
         <TarjetaUbicacion
           ubicacionId={selectedUbicacionId}
           onClose={() => setSelectedUbicacionId(null)}
+          isAdmin={isAdmin}
+          onEdit={(lugar) => {
+             setGlobalLugarToEdit(lugar);
+             setIsGlobalEditorOpen(true);
+          }}
         />
       )}
+
+      {/* Editor Global para editar cualquier lugar desde la tarjeta centralizada */}
+      <EditorLugar
+        isOpen={isGlobalEditorOpen}
+        onClose={() => setIsGlobalEditorOpen(false)}
+        lugarToEdit={globalLugarToEdit}
+        onSuccess={() => {
+          setIsGlobalEditorOpen(false);
+          // Forzar refresh de TarjetaUbicacion remontandola
+          const tId = globalLugarToEdit.ID_Ubicacion;
+          setSelectedUbicacionId(null);
+          setTimeout(() => setSelectedUbicacionId(tId), 10);
+        }}
+      />
     </>
   );
 }

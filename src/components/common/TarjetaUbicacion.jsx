@@ -7,7 +7,7 @@ import ModalConfirmacion from './ModalConfirmacion';
 import ModalFormulario from './ModalFormulario';
 import Spinner from './Spinner';
 
-export default function TarjetaUbicacion({ ubicacionId, onClose }) {
+export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit }) {
   const [ubicacion, setUbicacion] = useState(null);
   const [imagenes, setImagenes] = useState([]);
   const [imgIndex, setImgIndex] = useState(0);
@@ -204,13 +204,24 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={onClose} 
-                  className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-600 shrink-0"
-                  aria-label="Cerrar detalles"
-                >
-                  <MdClose className="w-6 h-6" />
-                </button>
+                <div className="flex gap-2">
+                  {isAdmin && (
+                    <button 
+                      onClick={() => onEdit(ubicacion)} 
+                      className="p-2.5 bg-gray-100 hover:bg-emerald-100 rounded-full transition-colors text-gray-600 hover:text-emerald-600 shrink-0 border border-transparent hover:border-emerald-200"
+                      title="Editar esta ubicación"
+                    >
+                      <MdIcons.MdEdit className="text-[20px]" />
+                    </button>
+                  )}
+                  <button 
+                    onClick={onClose} 
+                    className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-600 shrink-0"
+                    aria-label="Cerrar detalles"
+                  >
+                    <MdClose className="text-[20px]" />
+                  </button>
+                </div>
               </div>
 
               {/* Imagen Principal (Carrusel) */}
