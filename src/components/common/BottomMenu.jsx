@@ -16,7 +16,7 @@ import GestionarZonas from './GestionarZonas';
 import EditorLugar from './EditorLugar';
 import { supabase } from '../../lib/supabaseClient';
 
-export default function BottomMenu({ className = '' }) {
+export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -175,7 +175,7 @@ export default function BottomMenu({ className = '' }) {
             setIsAdminOpen(false);
             setIsGestionarUsuariosOpen(true);
           }}
-          onOpenGestionarEventos={() => {
+          onOpenGestionarAvisos={() => {
             setIsAdminOpen(false);
             setIsGestionarAvisosOpen(true);
           }}
@@ -186,6 +186,10 @@ export default function BottomMenu({ className = '' }) {
           onOpenGestionarZonas={() => {
             setIsAdminOpen(false);
             setIsGestionarZonasOpen(true);
+          }}
+          onOpenGestionarTramos={() => {
+            setIsAdminOpen(false);
+            if (onOpenAdminRoutes) onOpenAdminRoutes();
           }}
         />
       )}

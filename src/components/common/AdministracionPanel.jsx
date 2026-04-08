@@ -1,13 +1,15 @@
 import React from 'react';
 import { MdClose, MdPlace, MdTimeline, MdPeople, MdCategory, MdEvent, MdMap } from 'react-icons/md';
 
-export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarEventos, onOpenGestionarCategorias, onOpenGestionarZonas }) {
+export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarEventos, onOpenGestionarCategorias, onOpenGestionarZonas, onOpenGestionarTramos }) {
   const adminAreas = [
     { label: "Gestionar Zonas", icon: MdMap, action: onOpenGestionarZonas || (() => console.log('Zonas')) },
     { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
     { label: "Gestionar Nodos/Tramos", icon: MdTimeline, action: () => console.log('Tramos') },
     { label: "Gestionar Lugares", icon: MdPlace, action: onOpenGestionarLugares || (() => console.log('Lugares')) },
+    { label: "Gestionar Tramos", icon: MdTimeline, action: onOpenGestionarTramos || (() => console.log('Tramos')) },
     { label: "Gestionar Usuarios", icon: MdPeople, action: onOpenGestionarUsuarios || (() => console.log('Usuarios')) },
+    { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
     { label: "Gestionar Avisos", icon: MdEvent, action: onOpenGestionarEventos || (() => console.log('Eventos')) },
   ];
 
@@ -16,7 +18,7 @@ export default function AdministracionPanel({ onClose, onOpenGestionarLugares, o
       {/* Overlay similar to MenuUsuario */}
       <div className="fixed inset-0 bg-black/20 z-40 transition-opacity" onClick={onClose} />
 
-      {/* Floating Panel Panel similar but a bit wider to hold the grid */}
+      {/* Floating Panel similar but a bit wider to hold the grid */}
       <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-200px)] w-[90%] sm:w-[400px] bg-white flex flex-col p-[30px] rounded-[30px] z-[45] shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
 
         {/* Header */}

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { MdClose, MdStarBorder, MdStar, MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { MdClose, MdStarBorder, MdStar, MdChevronLeft, MdChevronRight, MdDirectionsWalk } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
+import { getUbicaciones } from '../../utils/localDB';
 import ModalConfirmacion from './ModalConfirmacion';
 import ModalFormulario from './ModalFormulario';
-import Spinner from './Spinner';
 
 export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit }) {
   const [ubicacion, setUbicacion] = useState(null);
@@ -22,13 +22,37 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
   // States for the ModalConfirmacion
   const [modalType, setModalType] = useState(null); // 'confirm_delete' | 'add_notes'
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ titulo: '', dia: '', hora: '', notas: '' });
+  const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
 
   useEffect(() => {
     if (!ubicacionId) return;
     
     const fetchAll = async () => {
       setLoading(true);
+      
+      let targetId = ubicacionId;
+
+      // 1. Detección de ID LOCAL
+      if (typeof ubicacionId === 'string' && ubicacionId.startsWith('ubi_')) {
+        const localData = getUbicaciones().find(u => u.id === ubicacionId);
+        if (localData && localData.supabaseId) {
+          // It's synced with Supabase, switch the targetId to Supabase ID and continue
+          targetId = localData.supabaseId;
+        } else if (localData) {
+          // Local only, no Supabase sync yet
+          setUbicacion({
+            ID_Ubicacion: localData.id,
+            Nombre: localData.nombre,
+            Descripcion: localData.descripcion,
+            Categoria: { Nombre_Categoria: localData.categoria, Icono: 'MdPlace' },
+            ID_Nodo: localData.nodeId
+          });
+          setImagenes([]);
+          setLoading(false);
+          return;
+        }
+      }
+
       // 1. Obtener Usuario
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       setUser(currentUser);
@@ -41,7 +65,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
           Categoria (*),
           Zona (*)
         `)
-        .eq('ID_Ubicacion', ubicacionId)
+        .eq('ID_Ubicacion', targetId)
         .single();
         
       if (ubiData) setUbicacion(ubiData);
@@ -50,7 +74,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
       const { data: imgData } = await supabase
         .from('Referencias_Visuales')
         .select('URL_Imagen')
-        .eq('ID_Ubicacion', ubicacionId);
+        .eq('ID_Ubicacion', targetId);
         
       if (imgData) setImagenes(imgData.map(i => i.URL_Imagen).filter(url => url));
 
@@ -60,7 +84,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
           .from('Ubicacion_Guardada')
           .select('ID_Guardado')
           .eq('ID_Usuario', currentUser.id)
-          .eq('ID_Ubicacion', ubicacionId)
+          .eq('ID_Ubicacion', targetId)
           .maybeSingle();
           
         if (favData) {
@@ -108,7 +132,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
       if (!error && data) {
         setIsFavorite(true);
         setFavoriteId(data.ID_Guardado);
-        setFormData({ titulo: ubicacion.Nombre, dia: '', hora: '', notas: '' }); // Reset
+        setFormData({ dia: '', hora: '', notas: '' }); // Reset
         setModalType('add_notes');
         setShowModal(true);
       }
@@ -127,13 +151,11 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
 
   const onSaveNotes = async () => {
     if (favoriteId) {
-      const dbTitulo = formData.titulo.trim() !== '' ? formData.titulo : null;
       const dbDia = formData.dia.trim() !== '' ? formData.dia : null;
       const dbHora = formData.hora.trim() !== '' ? formData.hora : null;
       const dbNotas = formData.notas.trim() !== '' ? formData.notas : null;
 
       await supabase.from('Ubicacion_Guardada').update({
-        Titulo_Guardado: dbTitulo,
         Dia_Semana: dbDia,
         Hora: dbHora,
         Datos_Adicionales: dbNotas
@@ -148,14 +170,23 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
     setModalType(null);
   };
 
+  const handleTrazarRuta = () => {
+    if (ubicacion && (ubicacion.ID_Nodo || ubicacion.nodeId)) {
+      const ubiTarget = {
+        nodeId: ubicacion.ID_Nodo || ubicacion.nodeId,
+        Nombre: ubicacion.Nombre
+      };
+      // Usar localStorage y despachar el evento que CampusMap escucha
+      localStorage.setItem('active_route_target', JSON.stringify(ubiTarget));
+      window.dispatchEvent(new Event('route_triggered'));
+      onClose(); // Cerrar la tarjeta para ver el mapa
+    } else {
+      alert("No se puede trazar ruta: Esta ubicación no está asociada a un nodo del mapa.");
+    }
+  };
+
   if (loading) {
-     return (
-       <div className="fixed inset-0 z-[48] flex items-center justify-center bg-black/10">
-         <div className="bg-white p-6 rounded-2xl shadow-xl">
-           <Spinner text="Cargando ubicación..." />
-         </div>
-       </div>
-     );
+     return null; // Podría ponerse un loader, o mantenerse transparente para que cargue rapidito en segundo plano
   }
   if (!ubicacion) return null;
 
@@ -322,7 +353,8 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
               >
                 {isFavorite ? <MdStar className="w-7 h-7 text-yellow-500" /> : <MdStarBorder className="w-7 h-7 text-gray-400" />}
               </button>
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-jakarta font-medium text-[16px] py-3 rounded-2xl transition-colors shadow-[0_4px_12px_rgba(21,93,252,0.25)]">
+              <button onClick={handleTrazarRuta} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-jakarta font-medium text-[16px] py-3 rounded-2xl transition-colors shadow-[0_4px_12px_rgba(21,93,252,0.25)] flex items-center justify-center gap-2">
+                <MdDirectionsWalk className="w-6 h-6" />
                 Trazar Ruta
               </button>
             </div>
@@ -352,17 +384,6 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
           textoConfirmar="Guardar Datos"
           textoCancelar="Omitir"
         >
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-bold text-gray-700">Título Personalizado</label>
-            <input 
-              type="text" 
-              placeholder="Ej: Sala de reuniones principal"
-              value={formData.titulo}
-              onChange={e => setFormData({...formData, titulo: e.target.value})}
-              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-sm font-bold text-gray-700">Día Frecuente</label>
             <select 
