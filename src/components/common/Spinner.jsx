@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default function Spinner({ text = 'Cargando...' }) {
+export default function Spinner({ size = 'w-8 h-8', border = 'border-4', color = 'border-blue-500', text = 'Cargando...' }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3">
-      <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-      <p className="text-[14px] font-sans text-gray-500 font-medium">{text}</p>
+    <div className="flex flex-col items-center justify-center py-10 gap-3">
+      <div className={`${size} ${border} ${color} border-t-transparent rounded-full animate-spin`}></div>
+      {text && <span className="font-sans text-gray-500 font-medium">{text}</span>}
     </div>
   );
 }

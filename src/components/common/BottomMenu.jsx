@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
+import TarjetaUbicacion from './TarjetaUbicacion';
 import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
 import UsuarioMiPerfil from './UsuarioMiPerfil';
@@ -9,6 +10,8 @@ import HistorialRutas from './HistorialRutas';
 import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
+import GestionarUsuarios from './GestionarUsuarios';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,13 +22,40 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
+  const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: dbUser } = await supabase
+          .from('Usuario')
+          .select('ID_Rol')
+          .eq('ID_Usuario', user.id)
+          .single();
+          
+        if (dbUser && dbUser.ID_Rol === 2) {
+          setIsAdmin(true);
+        }
+      }
+    };
+    fetchUserRole();
+  }, []);
+
+  const handleLocationSelect = (id) => {
+    setIsSearchOpen(false);
+    setIsFavoritesOpen(false);
+    setSelectedUbicacionId(null);
+    setTimeout(() => {
+      setSelectedUbicacionId(id);
+    }, 10);
+  };
 
   return createPortal(
     <>
-      <div 
-        style={{ zIndex: 9999 }}
-        className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 ${className}`}
-      >
+      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 z-40 ${className}`}>
         {/* Menu Icon */}
         <button
           onClick={() => setIsMenuOpen(true)}
@@ -50,6 +80,7 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
 
       {isMenuOpen && (
         <MenuUsuario
+          isAdmin={isAdmin}
           onClose={() => setIsMenuOpen(false)}
           onOpenFavorites={() => {
             setIsMenuOpen(false);
@@ -75,7 +106,10 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       )}
 
       {isFavoritesOpen && (
-        <LugaresFavoritos onClose={() => setIsFavoritesOpen(false)} />
+        <LugaresFavoritos 
+          onClose={() => setIsFavoritesOpen(false)} 
+          onLocationSelect={handleLocationSelect}
+        />
       )}
 
       {isProfileOpen && (
@@ -97,6 +131,10 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
             setIsAdminOpen(false);
             setIsGestionarLugaresOpen(true);
           }}
+          onOpenGestionarUsuarios={() => {
+            setIsAdminOpen(false);
+            setIsGestionarUsuariosOpen(true);
+          }}
           onOpenGestionarTramos={() => {
             setIsAdminOpen(false);
             if(onOpenAdminRoutes) onOpenAdminRoutes();
@@ -104,14 +142,28 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         />
       )}
 
-      {/* GestionarLugares controla su propio hijo EditorLugar internamente */}
       <GestionarLugares 
         isOpen={isGestionarLugaresOpen}
         onClose={() => setIsGestionarLugaresOpen(false)}
       />
 
+      <GestionarUsuarios 
+        isOpen={isGestionarUsuariosOpen}
+        onClose={() => setIsGestionarUsuariosOpen(false)}
+      />
+
       {isSearchOpen && (
-        <SearchPanel onClose={() => setIsSearchOpen(false)} />
+        <SearchPanel 
+          onClose={() => setIsSearchOpen(false)} 
+          onLocationSelect={handleLocationSelect}
+        />
+      )}
+
+      {selectedUbicacionId && (
+        <TarjetaUbicacion 
+          ubicacionId={selectedUbicacionId} 
+          onClose={() => setSelectedUbicacionId(null)} 
+        />
       )}
     </>,
     document.body

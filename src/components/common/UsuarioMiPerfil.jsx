@@ -3,6 +3,7 @@ import { MdClose, MdEdit, MdSave } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import ModalConfirmacion from './ModalConfirmacion';
+import Spinner from './Spinner';
 
 export default function UsuarioMiPerfil({ onClose }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -153,9 +154,7 @@ export default function UsuarioMiPerfil({ onClose }) {
 
         {/* Body */}
         {loading && !userData.id ? (
-          <div className="flex justify-center py-10">
-            <span className="font-['Plus_Jakarta_Sans'] text-gray-500">Cargando perfil...</span>
-          </div>
+          <Spinner text="Cargando perfil..." />
         ) : (
           <div className="flex flex-col gap-[39px] w-full">
             

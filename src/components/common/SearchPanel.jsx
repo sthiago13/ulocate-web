@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { MdClose } from 'react-icons/md';
+import { MdClose, MdPlace } from 'react-icons/md';
+import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResultCard from './ResultCard';
 import SearchBar from './SearchBar';
-import TarjetaUbicacion from './TarjetaUbicacion';
 import { getUbicaciones } from '../../utils/localDB';
-
-const CATEGORIAS = ['Académico', 'Alimentación', 'Servicios', 'Administrativo', 'Recreación'];
+import { supabase } from '../../lib/supabaseClient';
+import Spinner from './Spinner';
 
 const CATEGORY_ICONS = {
   'Académico':      '🎓',
@@ -17,112 +17,96 @@ const CATEGORY_ICONS = {
   'Recreación':     '⚽',
 };
 
-export default function SearchPanel({ onClose }) {
-  const [searchTerm,          setSearchTerm]          = useState('');
-  const [showFilters,         setShowFilters]          = useState(false);
-  const [selectedUbi,         setSelectedUbi]          = useState(null);   // objeto completo de localDB
-  const [ubicaciones,         setUbicaciones]          = useState([]);
-  const [activeCategory,      setActiveCategory]       = useState('Todos');
+export default function SearchPanel({ onClose, onLocationSelect }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("Todos");
+  
+  const [ubicacionesRemotas, setUbicacionesRemotas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Leer desde localDB cada vez que se abre el panel
   useEffect(() => {
-    setUbicaciones(getUbicaciones());
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { data: ubis } = await supabase.from('Ubicacion').select('*');
+        const { data: cats } = await supabase.from('Categoria').select('*');
+        if (ubis) setUbicacionesRemotas(ubis);
+        if (cats) setCategorias(cats);
+      } catch (err) {
+        console.error("Error cargando datos remotos:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const categoryFilters = ['Todos', ...CATEGORIAS];
+  const localUbis = getUbicaciones().map(u => ({
+    id: u.id,
+    nombre: u.nombre,
+    categoria: u.categoria,
+    isLocal: true
+  }));
 
-  const results = ubicaciones.filter(u => {
-    const matchSearch   = u.nombre?.toLowerCase().includes(searchTerm.toLowerCase());
+  const allResults = [
+    ...localUbis,
+    ...ubicacionesRemotas.map(u => {
+      const cat = categorias.find(c => c.ID_Categoria === u.ID_Categoria);
+      return {
+        id: u.ID_Ubicacion,
+        nombre: u.Nombre,
+        categoria: cat ? cat.Nombre_Categoria : 'Desconocido',
+        iconName: cat ? cat.Icono : 'MdPlace',
+        isLocal: false
+      };
+    })
+  ].filter(u => {
+    const matchSearch = u.nombre.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCategory = activeCategory === 'Todos' || u.categoria === activeCategory;
     return matchSearch && matchCategory;
   });
 
-  // Cuando se selecciona un resultado, disparamos el evento global y cerramos el buscador
-  const handleSelectRes = (res) => {
-    window.dispatchEvent(new CustomEvent('select_location', { 
-      detail: { id: res.id || res.ID_Ubicacion } 
-    }));
-    onClose();
-  };
-
+  const categoryFilters = ['Todos', 'Académico', 'Alimentación', 'Servicios', 'Administrativo', 'Recreación'];
 
   return createPortal(
     <>
-      <div
-        style={{ zIndex: 9998 }}
-        className="fixed inset-0 bg-black/10 transition-opacity md:bg-transparent"
-        onClick={onClose}
-      />
-
-      <div 
-        style={{ zIndex: 9999 }}
-        className="fixed bottom-32 left-[5%] sm:left-[calc(50%-225px)] w-[90%] sm:w-[450px] bg-white flex flex-col items-center p-5 rounded-[30px] shadow-[0px_4px_24px_rgba(0,0,0,0.15)] max-h-[60vh] overflow-hidden"
-      >
-        {/* Cabecera */}
+      <div className="fixed inset-0 bg-black/10 transition-opacity z-40" onClick={onClose} />
+      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-225px)] w-[90%] sm:w-[450px] bg-white flex flex-col items-center p-5 rounded-[30px] shadow-[0px_4px_24px_rgba(0,0,0,0.15)] max-h-[60vh] z-50 overflow-hidden">
         <div className="w-full flex justify-between items-center mb-3">
-          <h2 className="font-jakarta font-bold text-gray-800 text-lg ml-2">Buscar Lugares</h2>
-          <button onClick={onClose} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-700 transition-colors">
-            <MdClose className="w-5 h-5" />
-          </button>
+          <h2 className="font-bold text-gray-800 text-lg ml-2">Buscar Lugares</h2>
+          <button onClick={onClose} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-700 transition-colors"><MdClose className="w-5 h-5" /></button>
         </div>
 
-        {/* Resultados */}
         <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
-          {ubicaciones.length === 0 ? (
-            <div className="text-center text-gray-400 mt-10 font-sans text-sm px-4">
-              <p className="text-3xl mb-2">🗺️</p>
-              <p className="font-semibold text-gray-600">No hay lugares registrados aún</p>
-              <p className="text-xs text-gray-400 mt-1">El administrador debe agregar lugares usando el Modo Editor del mapa.</p>
-            </div>
-          ) : results.length > 0 ? (
-            results.map((res) => (
-              <ResultCard
-                key={res.id}
-                title={res.nombre}
-                subtitle={res.categoria}
-                icon={<span className="text-[22px]">{CATEGORY_ICONS[res.categoria] || '📍'}</span>}
-                onClick={() => handleSelectRes(res)}
-              />
-            ))
-          ) : (
-            <div className="text-center text-gray-500 mt-10 font-sans text-sm">
-              No se encontraron lugares con ese nombre.
-            </div>
-          )}
+          {loading && allResults.length === 0 ? <Spinner text="Cargando..." /> : 
+           allResults.length > 0 ? allResults.map(res => {
+             const Icon = res.iconName && MdIcons[res.iconName] ? MdIcons[res.iconName] : MdIcons.MdPlace;
+             return (
+               <ResultCard 
+                 key={res.id}
+                 title={res.nombre + (res.isLocal ? ' (Local)' : '')}
+                 subtitle={res.categoria}
+                 icon={res.isLocal ? <span className="text-[20px]">{CATEGORY_ICONS[res.categoria] || '📍'}</span> : <Icon className="text-[24px] text-blue-600" />}
+                 onClick={() => onLocationSelect && onLocationSelect(res.id)}
+               />
+             );
+           }) : <div className="text-center text-gray-500 mt-10 text-sm">No se encontraron resultados</div>
+          }
         </div>
 
-        {/* Filtros Categorías */}
         <AnimatePresence>
           {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="w-full shrink-0 flex items-center gap-3 overflow-x-auto scrollbar-hide py-3 mb-2"
-            >
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="w-full flex gap-3 overflow-x-auto py-2 mb-2 scrollbar-hide">
               {categoryFilters.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-5 py-2 whitespace-nowrap rounded-full font-jakarta font-bold text-[14px] transition-colors ${
-                    activeCategory === cat
-                      ? 'bg-blue-600 text-white border-transparent'
-                      : 'bg-[#f9f9f9] text-[#4a4a4a] border border-[#4a4a4a] hover:bg-gray-100'
-                  }`}
-                >
-                  {cat}
-                </button>
+                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap border ${activeCategory===cat ? 'bg-blue-600 text-white border-blue-600':'bg-gray-50 text-gray-600 border-gray-200'}`}>{cat}</button>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Buscador */}
-        <SearchBar
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFilterClick={() => setShowFilters(!showFilters)}
-        />
+        <SearchBar value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onFilterClick={() => setShowFilters(!showFilters)} />
       </div>
     </>,
     document.body
