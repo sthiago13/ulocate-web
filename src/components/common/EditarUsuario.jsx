@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
-  const [rol, setRol] = useState('2'); // 1=admin, 2=user
+  const [rol, setRol] = useState('1'); // 1=user, 2=admin
   const [inactiva, setInactiva] = useState(false);
 
   useEffect(() => {
     if (usuario && isOpen) {
       setNombre(usuario.Nombre || '');
       setCorreo(usuario.Correo || '');
-      setRol(usuario.ID_Rol?.toString() || '2');
+      setRol(usuario.ID_Rol?.toString() || '1');
       // Supongamos que hay un campo "Estado" o similar. Por ahora lo dejamos en false.
       setInactiva(false);
     }
@@ -109,8 +109,8 @@ export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
                     onChange={(e) => setRol(e.target.value)}
                     className="w-full appearance-none bg-[#f9f9f9] border border-gray-200 rounded-[12px] px-4 py-3 text-[#101828] focus:outline-none focus:border-[#155dfc] focus:ring-1 focus:ring-[#155dfc] transition-colors"
                   >
-                    <option value="1">Administrador</option>
-                    <option value="2">Usuario Normal</option>
+                    <option value="1">Estudiante (Normal)</option>
+                    <option value="2">Administrador</option>
                   </select>
                   {/* Flechita para el select */}
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
