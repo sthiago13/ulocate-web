@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
 import ModalConfirmacion from './ModalConfirmacion';
 
-export default function MenuUsuario({ onClose, onOpenProfile, onOpenFavorites, onOpenHistory, onOpenNotifications, onOpenAdmin }) {
+export default function MenuUsuario({ isAdmin, onClose, onOpenProfile, onOpenFavorites, onOpenHistory, onOpenNotifications, onOpenAdmin }) {
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -47,6 +47,7 @@ export default function MenuUsuario({ onClose, onOpenProfile, onOpenFavorites, o
           <div className="flex flex-col gap-[8px] mt-2">
             <div className="flex flex-col gap-[10px]">
               {menuItems.map((item, index) => {
+                if (item.label === "Administración" && !isAdmin) return null;
                 const Icon = item.Icon;
                 return (
                   <button

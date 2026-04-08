@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MdClose, MdSearch, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import EditorLugar from './EditorLugar';
 import ModalConfirmacion from './ModalConfirmacion';
+import SearchBar from './SearchBar';
 
 export default function GestionarLugares({ isOpen, onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,16 +72,12 @@ export default function GestionarLugares({ isOpen, onClose }) {
 
             {/* Buscador */}
             <div className="px-[30px] py-[20px] shrink-0 bg-[#f9fafb]">
-              <div className="relative">
-                <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[24px]" />
-                <input
-                  type="text"
-                  placeholder="Buscar ubicación..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white border border-[#d0d5dd] rounded-[15px] pl-[45px] pr-[15px] h-[55px] text-[16px] text-gray-900 font-['Plus_Jakarta_Sans'] focus:outline-none focus:ring-2 focus:ring-[#155dfc] transition-all shadow-sm"
-                />
-              </div>
+              <SearchBar 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                showFilter={false} 
+                placeholder="Buscar ubicación..." 
+              />
             </div>
 
             {/* Contenido (Lista Scrollable) */}

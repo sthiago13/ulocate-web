@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
 import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
@@ -9,6 +9,7 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +21,25 @@ export default function BottomMenu({ className = '' }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: dbUser } = await supabase
+          .from('Usuario')
+          .select('ID_Rol')
+          .eq('ID_Usuario', user.id)
+          .single();
+          
+        if (dbUser && dbUser.ID_Rol === 2) {
+          setIsAdmin(true);
+        }
+      }
+    };
+    fetchUserRole();
+  }, []);
 
   return (
     <>
@@ -50,6 +70,7 @@ export default function BottomMenu({ className = '' }) {
 
       {isMenuOpen && (
         <MenuUsuario
+          isAdmin={isAdmin}
           onClose={() => setIsMenuOpen(false)}
           onOpenFavorites={() => {
             setIsMenuOpen(false);

@@ -7,6 +7,7 @@ import ResultCard from './ResultCard';
 import ModalConfirmacion from './ModalConfirmacion';
 import ModalFormulario from './ModalFormulario';
 import TarjetaUbicacion from './TarjetaUbicacion';
+import Spinner from './Spinner';
 
 const FavItem = ({ fav, onEdit, onDelete, onViewLocation }) => {
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
@@ -226,7 +227,7 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
         {/* Saved Places */}
         <div className="flex flex-col gap-[22px] w-full mb-[30px]">
           {loading ? (
-             <div className="text-center font-sans text-gray-500 py-10">Cargando favoritos...</div>
+             <Spinner text="Cargando favoritos..." />
           ) : favoritos.length === 0 ? (
              <div className="text-center font-sans text-gray-500 py-10 bg-gray-50 rounded-[10px]">Aún no tienes lugares favoritos.</div>
           ) : (

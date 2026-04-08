@@ -6,6 +6,7 @@ import ResultCard from './ResultCard';
 import SearchBar from './SearchBar';
 import TarjetaUbicacion from './TarjetaUbicacion';
 import { supabase } from '../../lib/supabaseClient';
+import Spinner from './Spinner';
 
 // Store the data in module-level variables so it's cached between open/closes
 let cachedUbicaciones = null;
@@ -97,9 +98,7 @@ export default function SearchPanel({ onClose }) {
         {/* Listado de Resultados ResultCard */}
         <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
           {loading ? (
-            <div className="text-center text-gray-500 mt-10 font-sans">
-              Cargando ubicaciones...
-            </div>
+            <Spinner text="Cargando ubicaciones..." />
           ) : results.length > 0 ? (
             results.map((res) => {
               const catObj = categorias.find(c => c.ID_Categoria === res.ID_Categoria);
