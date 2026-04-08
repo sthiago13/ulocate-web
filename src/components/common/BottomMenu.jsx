@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
+import TarjetaUbicacion from './TarjetaUbicacion';
 import MenuUsuario from './MenuUsuario';
 import SearchPanel from './SearchPanel';
 import UsuarioMiPerfil from './UsuarioMiPerfil';
@@ -22,6 +23,7 @@ export default function BottomMenu({ className = '' }) {
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -41,9 +43,19 @@ export default function BottomMenu({ className = '' }) {
     fetchUserRole();
   }, []);
 
+  const handleLocationSelect = (id) => {
+    setIsSearchOpen(false);
+    setIsFavoritesOpen(false);
+    // Para forzar la re-renderizacion limpia de la tarjeta si ya estaba abierta con otro ID
+    setSelectedUbicacionId(null);
+    setTimeout(() => {
+      setSelectedUbicacionId(id);
+    }, 10);
+  };
+
   return (
     <>
-      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 ${className}`}>
+      <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 z-40 ${className}`}>
 
         {/* Menu Icon */}
         <button
@@ -96,7 +108,10 @@ export default function BottomMenu({ className = '' }) {
       )}
 
       {isFavoritesOpen && (
-        <LugaresFavoritos onClose={() => setIsFavoritesOpen(false)} />
+        <LugaresFavoritos 
+          onClose={() => setIsFavoritesOpen(false)} 
+          onLocationSelect={handleLocationSelect}
+        />
       )}
 
       {isProfileOpen && (
@@ -137,7 +152,18 @@ export default function BottomMenu({ className = '' }) {
       />
 
       {isSearchOpen && (
-        <SearchPanel onClose={() => setIsSearchOpen(false)} />
+        <SearchPanel 
+          onClose={() => setIsSearchOpen(false)} 
+          onLocationSelect={handleLocationSelect}
+        />
+      )}
+
+      {/* Tarjeta de Ubicacion Centralizada */}
+      {selectedUbicacionId && (
+        <TarjetaUbicacion 
+          ubicacionId={selectedUbicacionId} 
+          onClose={() => setSelectedUbicacionId(null)} 
+        />
       )}
     </>
   );

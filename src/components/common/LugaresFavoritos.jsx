@@ -95,7 +95,7 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
   const [modalType, setModalType] = useState(null); // 'confirm_delete' | 'edit_notes'
   const [showModal, setShowModal] = useState(false);
   const [selectedFav, setSelectedFav] = useState(null); // Whole Object
-  const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
+  const [formData, setFormData] = useState({ titulo: '', dia: '', hora: '', notas: '' });
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
 
   const fetchFavoritos = async (currentUser) => {
@@ -128,6 +128,7 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
   const handleEditClick = (fav) => {
     setSelectedFav(fav);
     setFormData({
+      titulo: fav.Titulo_Guardado || fav.Ubicacion?.Nombre || '',
       dia: fav.Dia_Semana || '',
       hora: fav.Hora || '',
       notas: fav.Datos_Adicionales || ''
@@ -143,7 +144,9 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
   };
 
   const handleViewLocation = (idUbicacion) => {
-    setSelectedUbicacionId(idUbicacion);
+    if (onLocationSelect) {
+      onLocationSelect(idUbicacion);
+    }
   };
 
   const closeModals = () => {
@@ -161,11 +164,13 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
 
   const onSaveNotes = async () => {
     if (selectedFav) {
+      const dbTitulo = formData.titulo.trim() !== '' ? formData.titulo : null;
       const dbDia = formData.dia.trim() !== '' ? formData.dia : null;
       const dbHora = formData.hora.trim() !== '' ? formData.hora : null;
       const dbNotas = formData.notas.trim() !== '' ? formData.notas : null;
 
       const { data, error } = await supabase.from('Ubicacion_Guardada').update({
+        Titulo_Guardado: dbTitulo,
         Dia_Semana: dbDia,
         Hora: dbHora,
         Datos_Adicionales: dbNotas
@@ -178,13 +183,6 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
     }
     closeModals();
   };
-
-  if (selectedUbicacionId) {
-    return <TarjetaUbicacion ubicacionId={selectedUbicacionId} onClose={() => {
-      setSelectedUbicacionId(null);
-      if (user) fetchFavoritos(user);
-    }} />;
-  }
 
   return (
     <>
@@ -310,6 +308,17 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
           subtitulo={`Ajusta las notificaciones o apuntes para ${selectedFav.Titulo_Guardado}`}
           textoConfirmar="Guardar Cambios"
         >
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Título Personalizado</label>
+            <input 
+              type="text" 
+              placeholder="Ej: Sala de reuniones principal"
+              value={formData.titulo}
+              onChange={e => setFormData({...formData, titulo: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-sm font-bold text-gray-700">Día Frecuente</label>
             <select 

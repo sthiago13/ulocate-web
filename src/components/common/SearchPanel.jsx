@@ -12,7 +12,7 @@ import Spinner from './Spinner';
 let cachedUbicaciones = null;
 let cachedCategorias = null;
 
-export default function SearchPanel({ onClose }) {
+export default function SearchPanel({ onClose, onLocationSelect }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
@@ -65,18 +65,6 @@ export default function SearchPanel({ onClose }) {
       return matchesSearch && matchesCategory;
   });
 
-  if (selectedUbicacionId) {
-    return (
-      <TarjetaUbicacion 
-        ubicacionId={selectedUbicacionId} 
-        onClose={() => {
-            setSelectedUbicacionId(null);
-            onClose(); // Cierra el panel completo para mantener limpio el UI
-        }} 
-      />
-    );
-  }
-
   return (
     <>
       {/* Fondo oscuro overlay solo para panel de búsqueda */}
@@ -111,7 +99,9 @@ export default function SearchPanel({ onClose }) {
                   title={res.Nombre} 
                   subtitle={catName} 
                   icon={<IconComponent className="text-[#101828] text-[24px]" />} 
-                  onClick={() => setSelectedUbicacionId(res.ID_Ubicacion)}
+                  onClick={() => {
+                    if (onLocationSelect) onLocationSelect(res.ID_Ubicacion);
+                  }}
                 />
               );
             })
