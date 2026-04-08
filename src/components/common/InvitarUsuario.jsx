@@ -15,7 +15,7 @@ export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
       ID_Rol: parseInt(rol, 10),
     };
     if (onInvite) onInvite(newUser);
-    
+
     // Limpiar para la próxima vez
     setNombre('');
     setCorreo('');

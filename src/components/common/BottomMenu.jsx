@@ -10,6 +10,7 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
+import GestionarEventos from '../GestionarEventos';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '' }) {
@@ -22,6 +23,7 @@ export default function BottomMenu({ className = '' }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
+  const [isGestionarEventosOpen, setIsGestionarEventosOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
 
@@ -34,7 +36,7 @@ export default function BottomMenu({ className = '' }) {
           .select('ID_Rol')
           .eq('ID_Usuario', user.id)
           .single();
-          
+
         if (dbUser && dbUser.ID_Rol === 2) {
           setIsAdmin(true);
         }
@@ -108,8 +110,8 @@ export default function BottomMenu({ className = '' }) {
       )}
 
       {isFavoritesOpen && (
-        <LugaresFavoritos 
-          onClose={() => setIsFavoritesOpen(false)} 
+        <LugaresFavoritos
+          onClose={() => setIsFavoritesOpen(false)}
           onLocationSelect={handleLocationSelect}
         />
       )}
@@ -127,8 +129,8 @@ export default function BottomMenu({ className = '' }) {
       )}
 
       {isAdminOpen && (
-        <AdministracionPanel 
-          onClose={() => setIsAdminOpen(false)} 
+        <AdministracionPanel
+          onClose={() => setIsAdminOpen(false)}
           onOpenGestionarLugares={() => {
             setIsAdminOpen(false);
             setIsGestionarLugaresOpen(true);
@@ -137,32 +139,41 @@ export default function BottomMenu({ className = '' }) {
             setIsAdminOpen(false);
             setIsGestionarUsuariosOpen(true);
           }}
+          onOpenGestionarEventos={() => {
+            setIsAdminOpen(false);
+            setIsGestionarEventosOpen(true);
+          }}
         />
       )}
 
       {/* GestionarLugares controla su propio hijo EditorLugar internamente */}
-      <GestionarLugares 
+      <GestionarLugares
         isOpen={isGestionarLugaresOpen}
         onClose={() => setIsGestionarLugaresOpen(false)}
       />
 
-      <GestionarUsuarios 
+      <GestionarUsuarios
         isOpen={isGestionarUsuariosOpen}
         onClose={() => setIsGestionarUsuariosOpen(false)}
       />
 
+      <GestionarEventos
+        isOpen={isGestionarEventosOpen}
+        onClose={() => setIsGestionarEventosOpen(false)}
+      />
+
       {isSearchOpen && (
-        <SearchPanel 
-          onClose={() => setIsSearchOpen(false)} 
+        <SearchPanel
+          onClose={() => setIsSearchOpen(false)}
           onLocationSelect={handleLocationSelect}
         />
       )}
 
       {/* Tarjeta de Ubicacion Centralizada */}
       {selectedUbicacionId && (
-        <TarjetaUbicacion 
-          ubicacionId={selectedUbicacionId} 
-          onClose={() => setSelectedUbicacionId(null)} 
+        <TarjetaUbicacion
+          ubicacionId={selectedUbicacionId}
+          onClose={() => setSelectedUbicacionId(null)}
         />
       )}
     </>
