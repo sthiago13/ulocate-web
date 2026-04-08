@@ -50,7 +50,6 @@ export default function EditorCategoria({ isOpen, onClose, categoriaToEdit, onSa
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 z-[90] transition-opacity"
-            onClick={onClose}
           />
 
           {/* Panel Derecha */}
@@ -76,7 +75,7 @@ export default function EditorCategoria({ isOpen, onClose, categoriaToEdit, onSa
                     {isEditing ? (categoriaToEdit?.Nombre_Categoria || 'Categoría') : 'Nueva Categoría'}
                   </span>
                   <span className="font-semibold text-amber-600 text-[14px]">
-                    {isEditing ? 'Editando categoría' : 'Agregando sección'}
+                    {isEditing ? 'Editando categoría' : 'Agregando categoría'}
                   </span>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { MdClose, MdPlace, MdTimeline, MdPeople, MdCategory, MdEvent, MdMap } from 'react-icons/md';
 
-export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarEventos, onOpenGestionarCategorias, onOpenGestionarZonas, onOpenGestionarTramos }) {
+export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarAvisos, onOpenGestionarCategorias, onOpenGestionarZonas, onOpenGestionarTramos }) {
   const adminAreas = [
     { label: "Gestionar Zonas", icon: MdMap, action: onOpenGestionarZonas || (() => console.log('Zonas')) },
     { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
@@ -10,7 +10,7 @@ export default function AdministracionPanel({ onClose, onOpenGestionarLugares, o
     { label: "Gestionar Tramos", icon: MdTimeline, action: onOpenGestionarTramos || (() => console.log('Tramos')) },
     { label: "Gestionar Usuarios", icon: MdPeople, action: onOpenGestionarUsuarios || (() => console.log('Usuarios')) },
     { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
-    { label: "Gestionar Avisos", icon: MdEvent, action: onOpenGestionarEventos || (() => console.log('Eventos')) },
+    { label: "Gestionar Avisos", icon: MdEvent, action: onOpenGestionarAvisos || (() => console.log('Eventos')) },
   ];
 
   return (
