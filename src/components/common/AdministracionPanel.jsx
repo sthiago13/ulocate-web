@@ -1,12 +1,12 @@
 import React from 'react';
 import { MdClose, MdPlace, MdTimeline, MdPeople, MdCategory, MdEvent } from 'react-icons/md';
 
-export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarEventos }) {
+export default function AdministracionPanel({ onClose, onOpenGestionarLugares, onOpenGestionarUsuarios, onOpenGestionarEventos, onOpenGestionarCategorias }) {
   const adminAreas = [
     { label: "Gestionar Lugares", icon: MdPlace, action: onOpenGestionarLugares || (() => console.log('Lugares')) },
     { label: "Gestionar Tramos", icon: MdTimeline, action: () => console.log('Tramos') },
     { label: "Gestionar Usuarios", icon: MdPeople, action: onOpenGestionarUsuarios || (() => console.log('Usuarios')) },
-    { label: "Agregar Categorías", icon: MdCategory, action: () => console.log('Categorias') },
+    { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
     { label: "Gestionar Eventos", icon: MdEvent, action: onOpenGestionarEventos || (() => console.log('Eventos')) },
   ];
 

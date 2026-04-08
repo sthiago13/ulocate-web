@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
-  const [rol, setRol] = useState('2'); // 1=admin, 2=user
+  const [rol, setRol] = useState('1'); // 1=user, 2=admin
 
   const handleInvite = () => {
     // Validar y enviar
@@ -19,7 +19,7 @@ export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
     // Limpiar para la próxima vez
     setNombre('');
     setCorreo('');
-    setRol('2');
+    setRol('1');
   };
 
   if (!isOpen) return null;
@@ -75,8 +75,8 @@ export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
                     onChange={(e) => setRol(e.target.value)}
                     className="w-full appearance-none bg-[#f9f9f9] border border-gray-200 rounded-[12px] px-4 py-3 text-[#101828] focus:outline-none focus:border-[#155dfc] focus:ring-1 focus:ring-[#155dfc] transition-colors"
                   >
-                    <option value="1">Administrador</option>
-                    <option value="2">Usuario Normal</option>
+                    <option value="1">Estudiante (Normal)</option>
+                    <option value="2">Administrador</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

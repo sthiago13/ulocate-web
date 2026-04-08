@@ -21,7 +21,7 @@ export default function EditarEvento({ isOpen, onClose, evento, onSave }) {
           // Format: YYYY-MM-DDThh:mm
           const tzoffset = (new Date()).getTimezoneOffset() * 60000; // local offset
           localFecha = (new Date(d - tzoffset)).toISOString().slice(0, 16);
-        } catch(e) {}
+        } catch (e) { }
       }
       setFecha(localFecha);
       setUbicacion(evento.Ubicacion || '');
