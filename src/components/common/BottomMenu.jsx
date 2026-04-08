@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
 import TarjetaUbicacion from './TarjetaUbicacion';
 import MenuUsuario from './MenuUsuario';
@@ -11,6 +10,8 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
+import GestionarEventos from '../GestionarEventos';
+import GestionarCategorias from '../GestionarCategorias';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
@@ -23,6 +24,8 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
+  const [isGestionarEventosOpen, setIsGestionarEventosOpen] = useState(false);
+  const [isGestionarCategoriasOpen, setIsGestionarCategoriasOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
 
@@ -35,7 +38,7 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
           .select('ID_Rol')
           .eq('ID_Usuario', user.id)
           .single();
-          
+
         if (dbUser && dbUser.ID_Rol === 2) {
           setIsAdmin(true);
         }
@@ -47,15 +50,17 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   const handleLocationSelect = (id) => {
     setIsSearchOpen(false);
     setIsFavoritesOpen(false);
+    // Para forzar la re-renderizacion limpia de la tarjeta si ya estaba abierta con otro ID
     setSelectedUbicacionId(null);
     setTimeout(() => {
       setSelectedUbicacionId(id);
     }, 10);
   };
 
-  return createPortal(
+  return (
     <>
       <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 z-40 ${className}`}>
+
         {/* Menu Icon */}
         <button
           onClick={() => setIsMenuOpen(true)}
@@ -76,6 +81,7 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         >
           <MdSearch className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
+
       </div>
 
       {isMenuOpen && (
@@ -106,8 +112,8 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       )}
 
       {isFavoritesOpen && (
-        <LugaresFavoritos 
-          onClose={() => setIsFavoritesOpen(false)} 
+        <LugaresFavoritos
+          onClose={() => setIsFavoritesOpen(false)}
           onLocationSelect={handleLocationSelect}
         />
       )}
@@ -125,8 +131,8 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       )}
 
       {isAdminOpen && (
-        <AdministracionPanel 
-          onClose={() => setIsAdminOpen(false)} 
+        <AdministracionPanel
+          onClose={() => setIsAdminOpen(false)}
           onOpenGestionarLugares={() => {
             setIsAdminOpen(false);
             setIsGestionarLugaresOpen(true);
@@ -135,37 +141,56 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
             setIsAdminOpen(false);
             setIsGestionarUsuariosOpen(true);
           }}
+          onOpenGestionarEventos={() => {
+            setIsAdminOpen(false);
+            setIsGestionarEventosOpen(true);
+          }}
+          onOpenGestionarCategorias={() => {
+            setIsAdminOpen(false);
+            setIsGestionarCategoriasOpen(true);
+          }}
           onOpenGestionarTramos={() => {
             setIsAdminOpen(false);
-            if(onOpenAdminRoutes) onOpenAdminRoutes();
+            if (onOpenAdminRoutes) onOpenAdminRoutes();
           }}
         />
       )}
 
-      <GestionarLugares 
+      {/* GestionarLugares controla su propio hijo EditorLugar internamente */}
+      <GestionarLugares
         isOpen={isGestionarLugaresOpen}
         onClose={() => setIsGestionarLugaresOpen(false)}
       />
 
-      <GestionarUsuarios 
+      <GestionarUsuarios
         isOpen={isGestionarUsuariosOpen}
         onClose={() => setIsGestionarUsuariosOpen(false)}
       />
 
+      <GestionarEventos
+        isOpen={isGestionarEventosOpen}
+        onClose={() => setIsGestionarEventosOpen(false)}
+      />
+
+      <GestionarCategorias
+        isOpen={isGestionarCategoriasOpen}
+        onClose={() => setIsGestionarCategoriasOpen(false)}
+      />
+
       {isSearchOpen && (
-        <SearchPanel 
-          onClose={() => setIsSearchOpen(false)} 
+        <SearchPanel
+          onClose={() => setIsSearchOpen(false)}
           onLocationSelect={handleLocationSelect}
         />
       )}
 
+      {/* Tarjeta de Ubicacion Centralizada */}
       {selectedUbicacionId && (
-        <TarjetaUbicacion 
-          ubicacionId={selectedUbicacionId} 
-          onClose={() => setSelectedUbicacionId(null)} 
+        <TarjetaUbicacion
+          ubicacionId={selectedUbicacionId}
+          onClose={() => setSelectedUbicacionId(null)}
         />
       )}
-    </>,
-    document.body
+    </>
   );
 }
