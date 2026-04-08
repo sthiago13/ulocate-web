@@ -22,7 +22,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
   // States for the ModalConfirmacion
   const [modalType, setModalType] = useState(null); // 'confirm_delete' | 'add_notes'
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
+  const [formData, setFormData] = useState({ titulo: '', dia: '', hora: '', notas: '' });
 
   useEffect(() => {
     if (!ubicacionId) return;
@@ -108,7 +108,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
       if (!error && data) {
         setIsFavorite(true);
         setFavoriteId(data.ID_Guardado);
-        setFormData({ dia: '', hora: '', notas: '' }); // Reset
+        setFormData({ titulo: ubicacion.Nombre, dia: '', hora: '', notas: '' }); // Reset
         setModalType('add_notes');
         setShowModal(true);
       }
@@ -127,11 +127,13 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
 
   const onSaveNotes = async () => {
     if (favoriteId) {
+      const dbTitulo = formData.titulo.trim() !== '' ? formData.titulo : null;
       const dbDia = formData.dia.trim() !== '' ? formData.dia : null;
       const dbHora = formData.hora.trim() !== '' ? formData.hora : null;
       const dbNotas = formData.notas.trim() !== '' ? formData.notas : null;
 
       await supabase.from('Ubicacion_Guardada').update({
+        Titulo_Guardado: dbTitulo,
         Dia_Semana: dbDia,
         Hora: dbHora,
         Datos_Adicionales: dbNotas
@@ -339,6 +341,17 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
           textoConfirmar="Guardar Datos"
           textoCancelar="Omitir"
         >
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-bold text-gray-700">Título Personalizado</label>
+            <input 
+              type="text" 
+              placeholder="Ej: Sala de reuniones principal"
+              value={formData.titulo}
+              onChange={e => setFormData({...formData, titulo: e.target.value})}
+              className="w-full font-sans px-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-sm font-bold text-gray-700">Día Frecuente</label>
             <select 
