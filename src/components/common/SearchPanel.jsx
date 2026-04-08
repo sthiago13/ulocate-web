@@ -43,26 +43,18 @@ export default function SearchPanel({ onClose, onLocationSelect }) {
     fetchData();
   }, []);
 
-  const localUbis = getUbicaciones().map(u => ({
-    id: u.id,
-    nombre: u.nombre,
-    categoria: u.categoria,
-    isLocal: true
-  }));
+  const allResults = ubicacionesRemotas.map(u => {
+    const cat = categorias.find(c => c.ID_Categoria === u.ID_Categoria);
+    return {
+      id: u.ID_Ubicacion,
+      nombre: u.Nombre,
+      categoria: cat ? cat.Nombre_Categoria : 'Desconocido',
+      iconName: cat ? cat.Icono : 'MdPlace',
+      isLocal: false
+    };
+  });
 
-  const allResults = [
-    ...localUbis,
-    ...ubicacionesRemotas.map(u => {
-      const cat = categorias.find(c => c.ID_Categoria === u.ID_Categoria);
-      return {
-        id: u.ID_Ubicacion,
-        nombre: u.Nombre,
-        categoria: cat ? cat.Nombre_Categoria : 'Desconocido',
-        iconName: cat ? cat.Icono : 'MdPlace',
-        isLocal: false
-      };
-    })
-  ].filter(u => {
+  const filtrados = allResults.filter(u => {
     const matchSearch = u.nombre.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCategory = activeCategory === 'Todos' || u.categoria === activeCategory;
     return matchSearch && matchCategory;
@@ -80,15 +72,15 @@ export default function SearchPanel({ onClose, onLocationSelect }) {
         </div>
 
         <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
-          {loading && allResults.length === 0 ? <Spinner text="Cargando..." /> : 
-           allResults.length > 0 ? allResults.map(res => {
+          {loading && filtrados.length === 0 ? <Spinner text="Cargando..." /> : 
+           filtrados.length > 0 ? filtrados.map(res => {
              const Icon = res.iconName && MdIcons[res.iconName] ? MdIcons[res.iconName] : MdIcons.MdPlace;
              return (
                <ResultCard 
                  key={res.id}
-                 title={res.nombre + (res.isLocal ? ' (Local)' : '')}
+                 title={res.nombre}
                  subtitle={res.categoria}
-                 icon={res.isLocal ? <span className="text-[20px]">{CATEGORY_ICONS[res.categoria] || '📍'}</span> : <Icon className="text-[24px] text-blue-600" />}
+                 icon={<Icon className="text-[24px] text-blue-600" />}
                  onClick={() => onLocationSelect && onLocationSelect(res.id)}
                />
              );
