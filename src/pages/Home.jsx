@@ -21,7 +21,7 @@ export default function Home() {
     <div className="flex flex-col h-screen w-full bg-gray-100 relative font-sans overflow-hidden">
 
       {/* En-app Header */}
-      <HeaderApp className="relative z-100 shrink-0" />
+      <HeaderApp className="relative z-10 shrink-0" />
 
       {/* Map Container Area */}
       <div className="flex-1 relative w-full bg-[#E5E5E5]">
@@ -34,9 +34,9 @@ export default function Home() {
 
       {/* Componente de detalle (Portalized inside) */}
       {selectedUbiId && (
-        <TarjetaUbicacion 
-          ubicacionId={selectedUbiId} 
-          onClose={() => setSelectedUbiId(null)} 
+        <TarjetaUbicacion
+          ubicacionId={selectedUbiId}
+          onClose={() => setSelectedUbiId(null)}
         />
       )}
 

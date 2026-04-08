@@ -10,8 +10,8 @@ import Notificaciones from './Notificaciones';
 import AdministracionPanel from './AdministracionPanel';
 import GestionarLugares from './GestionarLugares';
 import GestionarUsuarios from './GestionarUsuarios';
-import GestionarEventos from '../GestionarEventos';
-import GestionarCategorias from '../GestionarCategorias';
+import GestionarEventos from './GestionarEventos';
+import GestionarCategorias from './GestionarCategorias';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function BottomMenu({ className = '', onOpenAdminRoutes }) {

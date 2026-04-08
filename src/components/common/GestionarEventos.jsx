@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose, MdEvent, MdEdit, MdAdd, MdPlace, MdCalendarToday } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabaseClient';
-import SearchBar from './common/SearchBar';
-import Spinner from './common/Spinner';
+import { supabase } from '../../lib/supabaseClient';
+import SearchBar from './SearchBar';
+import Spinner from './Spinner';
 import CrearEvento from './CrearEvento';
 import EditarEvento from './EditarEvento';
+import ModalConfirmacion from './ModalConfirmacion';
 
 export default function GestionarEventos({ isOpen, onClose }) {
   const [eventos, setEventos] = useState([]);

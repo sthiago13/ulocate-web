@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public."Evento" (
     "ID_Evento" SERIAL PRIMARY KEY,
     "Titulo" VARCHAR(100) NOT NULL,
     "Descripcion" TEXT,
-    "Organizador" VARCHAR(100),
+    "Lugar" VARCHAR(255),
     "Fecha_Inicio" TIMESTAMP WITH TIME ZONE NOT NULL,
     "Fecha_Fin" TIMESTAMP WITH TIME ZONE,
     "ID_Ubicacion" INTEGER REFERENCES public."Ubicacion"("ID_Ubicacion") ON DELETE SET NULL,
