@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import ModalConfirmacion from './ModalConfirmacion';
 import ModalFormulario from './ModalFormulario';
+import Spinner from './Spinner';
 
 export default function TarjetaUbicacion({ ubicacionId, onClose }) {
   const [ubicacion, setUbicacion] = useState(null);
@@ -146,7 +147,13 @@ export default function TarjetaUbicacion({ ubicacionId, onClose }) {
   };
 
   if (loading) {
-     return null; // Podría ponerse un loader, o mantenerse transparente para que cargue rapidito en segundo plano
+     return (
+       <div className="fixed inset-0 z-[48] flex items-center justify-center bg-black/10">
+         <div className="bg-white p-6 rounded-2xl shadow-xl">
+           <Spinner text="Cargando ubicación..." />
+         </div>
+       </div>
+     );
   }
   if (!ubicacion) return null;
 

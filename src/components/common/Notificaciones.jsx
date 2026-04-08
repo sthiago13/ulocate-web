@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose, MdNotificationsActive, MdSchool, MdBusinessCenter, MdRestaurant, MdOutlineNotificationsNone } from 'react-icons/md';
 import { motion } from 'framer-motion';
-import { notificaciones as mockNotificaciones } from '../../data/mockData';
+import { supabase } from '../../lib/supabaseClient';
+import { formatRelativeDate } from '../../utils/formatters';
+import Spinner from './Spinner';
 
 export default function Notificaciones({ onClose }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulando carga de datos desde mockData
-    setTimeout(() => {
-      setNotifications(mockNotificaciones || []);
+    const fetchNotificaciones = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('Alerta_Global')
+        .select('*')
+        .eq('Activa', true)
+        .order('Fecha_Creacion', { ascending: false });
+        
+      if (!error && data) {
+        setNotifications(data);
+      }
       setLoading(false);
-    }, 600);
+    };
+    fetchNotificaciones();
   }, []);
 
   const getIcon = (iconName) => {
@@ -66,10 +77,7 @@ export default function Notificaciones({ onClose }) {
         {/* Notificaciones List */}
         <div className="flex flex-col gap-[16px] w-full pb-[40px]">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="font-sans text-gray-500 font-medium">Buscando alertas...</span>
-            </div>
+            <Spinner color="border-yellow-500" text="Buscando alertas..." />
           ) : notifications.length === 0 ? (
             <div className="text-center font-sans text-gray-500 py-10 bg-gray-50 rounded-[16px] border border-gray-100 flex flex-col items-center justify-center gap-2">
               <MdOutlineNotificationsNone className="text-[48px] text-gray-300" />
@@ -81,13 +89,11 @@ export default function Notificaciones({ onClose }) {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                key={notif.ID_Notificacion}
-                className={`bg-white border rounded-[16px] p-4 flex gap-4 transition-all ${notif.Leida ? 'border-gray-100 opacity-70' : 'border-blue-100 shadow-[0px_4px_16px_rgba(21,93,252,0.08)] bg-blue-50/30'
-                  }`}
+                key={notif.ID_Alerta}
+                className="bg-white border rounded-[16px] p-4 flex gap-4 transition-all border-blue-100 shadow-[0px_4px_16px_rgba(21,93,252,0.08)] bg-blue-50/30"
               >
-                <div className={`w-[48px] h-[48px] rounded-full flex items-center justify-center shrink-0 ${notif.Leida ? 'bg-gray-100' : 'bg-[#e8f0fe]'
-                  }`}>
-                  {getIcon(notif.Icono)}
+                <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center shrink-0 bg-[#e8f0fe]">
+                  {getIcon(null)}
                 </div>
 
                 <div className="flex flex-col flex-1">
@@ -95,13 +101,13 @@ export default function Notificaciones({ onClose }) {
                     <span className="font-bold text-[15px] text-gray-800 leading-tight pr-4">
                       {notif.Titulo}
                     </span>
-                    {!notif.Leida && <div className="w-[8px] h-[8px] bg-blue-500 rounded-full shrink-0 mt-1"></div>}
+                    <div className="w-[8px] h-[8px] bg-blue-500 rounded-full shrink-0 mt-1"></div>
                   </div>
                   <span className="text-[14px] text-gray-600 leading-snug mb-2">
                     {notif.Mensaje}
                   </span>
                   <span className="text-[12px] font-bold text-gray-400">
-                    {notif.Tiempo}
+                    {formatRelativeDate(notif.Fecha_Creacion)}
                   </span>
                 </div>
               </motion.div>
