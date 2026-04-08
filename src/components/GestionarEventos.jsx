@@ -22,18 +22,11 @@ export default function GestionarEventos({ isOpen, onClose }) {
         const { data, error } = await supabase
           .from('Evento')
           .select('*')
-          .order('Fecha', { ascending: true })
+          .order('Fecha_Inicio', { ascending: true })
           .limit(20);
 
-        if (data && data.length > 0) {
+        if (data) {
           setEventos(data);
-        } else {
-          // Datos de prueba
-          setEventos([
-            { ID_Evento: '1', Nombre: 'Exposici├│n de Proyectos de Grado', Fecha: '2026-05-15T09:00:00Z', Ubicacion: 'Edificio A, Planta Baja' },
-            { ID_Evento: '2', Nombre: 'Conferencia de Inteligencia Artificial', Fecha: '2026-05-20T14:30:00Z', Ubicacion: 'Auditorio Principal' },
-            { ID_Evento: '3', Nombre: 'Torneo Interfacultades de Ajedrez', Fecha: '2026-06-05T10:00:00Z', Ubicacion: 'Biblioteca Central' },
-          ]);
         }
         setLoading(false);
       };
@@ -118,9 +111,9 @@ export default function GestionarEventos({ isOpen, onClose }) {
 
                     // Formatear la fecha si existe de forma simple
                     let fechaStr = "Fecha por definir";
-                    if (evt.Fecha) {
+                    if (evt.Fecha_Inicio || evt.Fecha) {
                       try {
-                        const d = new Date(evt.Fecha);
+                        const d = new Date(evt.Fecha_Inicio || evt.Fecha);
                         fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                       } catch (e) { }
                     }
@@ -195,10 +188,28 @@ export default function GestionarEventos({ isOpen, onClose }) {
       <CrearEvento
         isOpen={isCreating}
         onClose={() => setIsCreating(false)}
-        onCreate={(newEvent) => {
-          // En un entorno real se guarda en Supabase, por ahora actualizamos estado local
-          const eventoCreado = { ...newEvent, ID_Evento: Date.now().toString() };
-          setEventos(prev => [...prev, eventoCreado]);
+        onCreate={async (newEvent) => {
+          try {
+            // newEvent contains: Nombre, Fecha, Ubicacion, Descripcion
+            const dStr = newEvent.Fecha ? new Date(newEvent.Fecha).toISOString() : new Date().toISOString();
+            
+            const payload = {
+              Titulo: newEvent.Nombre,
+              Fecha_Inicio: dStr,
+              Lugar: newEvent.Ubicacion,
+              Descripcion: newEvent.Descripcion
+            };
+
+            const { data, error } = await supabase
+              .from('Evento')
+              .insert(payload)
+              .select('*')
+              .single();
+
+            if (data) {
+              setEventos(prev => [...prev, data]);
+            }
+          } catch(err) { console.error('Error creando evento', err); }
           setIsCreating(false);
         }}
       />
@@ -207,9 +218,29 @@ export default function GestionarEventos({ isOpen, onClose }) {
         isOpen={!!editingEvent}
         evento={editingEvent}
         onClose={() => setEditingEvent(null)}
-        onSave={(updatedEvent) => {
-          // En entorno real se guarda en Supabase, por ahora actualizamos local
-          setEventos(prev => prev.map(e => e.ID_Evento === updatedEvent.ID_Evento ? updatedEvent : e));
+        onSave={async (updatedEvent) => {
+          try {
+            // Asumiendo form idéntico
+            const dStr = updatedEvent.Fecha ? new Date(updatedEvent.Fecha).toISOString() : new Date().toISOString();
+            
+            const payload = {
+              Titulo: updatedEvent.Nombre || updatedEvent.Titulo,
+              Fecha_Inicio: dStr,
+              Lugar: updatedEvent.Ubicacion || updatedEvent.Lugar,
+              Descripcion: updatedEvent.Descripcion
+            };
+
+            const { data, error } = await supabase
+              .from('Evento')
+              .update(payload)
+              .eq('ID_Evento', updatedEvent.ID_Evento)
+              .select('*')
+              .single();
+
+            if (data) {
+              setEventos(prev => prev.map(e => e.ID_Evento === updatedEvent.ID_Evento ? data : e));
+            }
+          } catch(err) { console.error('Error actualizando evento', err); }
           setEditingEvent(null);
         }}
       />

@@ -12,19 +12,20 @@ export default function EditarEvento({ isOpen, onClose, evento, onSave }) {
 
   useEffect(() => {
     if (evento && isOpen) {
-      setNombre(evento.Nombre || '');
+      setNombre(evento.Titulo || evento.Nombre || '');
       // Format datetime string for input type="datetime-local" if possible
       let localFecha = '';
-      if (evento.Fecha) {
+      const fString = evento.Fecha_Inicio || evento.Fecha;
+      if (fString) {
         try {
-          const d = new Date(evento.Fecha);
+          const d = new Date(fString);
           // Format: YYYY-MM-DDThh:mm
           const tzoffset = (new Date()).getTimezoneOffset() * 60000; // local offset
           localFecha = (new Date(d - tzoffset)).toISOString().slice(0, 16);
         } catch (e) { }
       }
       setFecha(localFecha);
-      setUbicacion(evento.Ubicacion || '');
+      setUbicacion(evento.Lugar || evento.Ubicacion || '');
       setDescripcion(evento.Descripcion || '');
     }
   }, [evento, isOpen]);
@@ -33,9 +34,12 @@ export default function EditarEvento({ isOpen, onClose, evento, onSave }) {
     // Validar y enviar
     const updatedEvent = {
       ...evento,
-      Nombre: nombre,
+      Nombre: nombre, // pasamos de vuelta para retrocompatibilidad
+      Titulo: nombre, // pasamos el campo nuevo
       Fecha: fecha ? new Date(fecha).toISOString() : null, // Simplistic conversion back
+      Fecha_Inicio: fecha ? new Date(fecha).toISOString() : null, // Nuevo capmpo
       Ubicacion: ubicacion,
+      Lugar: ubicacion,
       Descripcion: descripcion,
     };
     if (onSave) onSave(updatedEvent);
@@ -72,7 +76,7 @@ export default function EditarEvento({ isOpen, onClose, evento, onSave }) {
                 </div>
                 <div className="flex flex-col font-['Plus_Jakarta_Sans']">
                   <span className="font-bold text-[#101828] text-[20px] leading-[26px] truncate max-w-[200px]">
-                    {evento?.Nombre || 'Evento'}
+                    {evento?.Titulo || evento?.Nombre || 'Evento'}
                   </span>
                   <span className="font-semibold text-purple-600 text-[14px]">Editando evento</span>
                 </div>
