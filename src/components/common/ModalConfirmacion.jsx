@@ -49,11 +49,8 @@ export default function ModalConfirmacion({
                   </button>
                 )}
                 <button
-                  onClick={() => {
-                    onConfirm();
-                    onClose();
-                  }}
-                  className={`px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-white transition-colors ${colorConfirmar}`}
+                  onClick={onConfirm}
+                  className={`px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-white transition-colors flex items-center justify-center min-w-[100px] ${colorConfirmar}`}
                 >
                   {textoConfirmar}
                 </button>

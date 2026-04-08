@@ -50,12 +50,12 @@ const FavItem = ({ fav, onEdit, onDelete, onViewLocation }) => {
   const actionsContent = (
     <>
       <button 
-        onClick={() => onViewLocation(fav.ID_Ubicacion)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold transition-colors"
+        onClick={(e) => { e.stopPropagation(); onViewLocation(fav.ID_Ubicacion); }}
+        className="px-3 py-1.5 rounded-lg bg-green-50 text-green-600 text-sm font-bold flex items-center gap-1 hover:bg-green-600 hover:text-white transition-colors"
         title="Ver Ubicación en Mapa"
       >
-        <MdLocationOn className="text-[18px]" />
-        <span className="hidden sm:inline">Ver ruta</span>
+        <MdIcons.MdVisibility className="text-[16px]" />
+        <span className="hidden sm:inline">Ver lugar</span>
       </button>
       <button 
         onClick={() => onEdit(fav)}

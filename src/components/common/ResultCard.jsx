@@ -19,7 +19,7 @@ export default function ResultCard({
       {/* Header Info */}
       <div className={`flex items-start justify-between w-full ${(tags || expandedContent || actions) ? 'mb-3' : ''}`}>
         <div className="flex gap-[15px] items-center w-full min-w-0">
-          <div className="bg-[#fffabe] flex items-center justify-center rounded-[10px] w-[40px] h-[40px] shrink-0">
+          <div className="bg-blue-100 flex items-center justify-center rounded-[10px] w-[40px] h-[40px] shrink-0">
             {icon || <div className="w-6 h-6 bg-gray-200 rounded-full" />}
           </div>
           <div className="flex flex-col min-w-0 flex-1">

@@ -6,6 +6,7 @@ export default function InputField({
   placeholder,
   className = '',
   id,
+  multiline = false,
   ...props
 }) {
   return (
@@ -15,14 +16,24 @@ export default function InputField({
           {label}
         </label>
       )}
-      <div className="bg-white border border-[#090909] flex items-center p-3 rounded-[8px] w-full">
-        <input
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          className="font-jakarta font-normal text-[14px] text-black w-full outline-none bg-transparent placeholder-[#a3a3a3]"
-          {...props}
-        />
+      <div className={`bg-white border border-[#090909] flex items-center p-3 rounded-[8px] w-full ${multiline ? 'h-auto' : ''}`}>
+        {multiline ? (
+          <textarea
+            id={id}
+            placeholder={placeholder}
+            className="font-jakarta font-normal text-[14px] text-black w-full outline-none bg-transparent placeholder-[#a3a3a3] resize-none"
+            rows={3}
+            {...props}
+          />
+        ) : (
+          <input
+            id={id}
+            type={type}
+            placeholder={placeholder}
+            className="font-jakarta font-normal text-[14px] text-black w-full outline-none bg-transparent placeholder-[#a3a3a3]"
+            {...props}
+          />
+        )}
       </div>
     </div>
   );

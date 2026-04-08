@@ -7,7 +7,7 @@ export default function Button({
   onClick,
   ...props
 }) {
-  const baseClasses = "flex items-center justify-center p-3 rounded-[13px] h-[63px] transition-colors cursor-pointer w-full shrink-0";
+  const baseClasses = "flex items-center justify-center p-3 rounded-[13px] h-[63px] transition-colors cursor-pointer w-full";
   
   const variants = {
     primary: "bg-[#155dfc] hover:bg-blue-700 text-white font-inter text-[24px]",

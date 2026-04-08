@@ -150,6 +150,7 @@ export default function BottomMenu({ className = '' }) {
       <GestionarLugares
         isOpen={isGestionarLugaresOpen}
         onClose={() => setIsGestionarLugaresOpen(false)}
+        onLocationSelect={handleLocationSelect}
       />
 
       <GestionarUsuarios

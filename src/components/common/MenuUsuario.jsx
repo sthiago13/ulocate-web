@@ -18,6 +18,7 @@ export default function MenuUsuario({ isAdmin, onClose, onOpenProfile, onOpenFav
 
   // Función asíncrona para cerrar sesión
   const handleCerrarSesion = async () => {
+    setShowLogoutConfirm(false);
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error al cerrar sesión:", error.message);

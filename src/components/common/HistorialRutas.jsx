@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { MdClose, MdHistory, MdLocationOn, MdDirections, MdAccessTime } from 'react-icons/md';
+import { MdClose, MdHistory, MdLocationOn, MdDirections, MdAccessTime, MdDelete } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import { formatRelativeDate } from '../../utils/formatters';
 import Spinner from './Spinner';
+import ModalConfirmacion from './ModalConfirmacion';
 
 export default function HistorialRutas({ onClose }) {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -43,6 +46,17 @@ export default function HistorialRutas({ onClose }) {
     return `${(meters / 1000).toFixed(1)} km`;
   };
 
+  const clearHistory = async () => {
+    setIsDeleting(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('Historial_Ruta').delete().eq('ID_Usuario', user.id);
+      setHistory([]);
+    }
+    setIsDeleting(false);
+    setShowConfirm(false);
+  };
+
   return (
     <>
       {/* Background Overlay - No onClick para que solo se cierre con la X */}
@@ -50,7 +64,7 @@ export default function HistorialRutas({ onClose }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 z-50"
+        className="fixed inset-0 bg-black/40 z-65"
       />
 
       {/* Sidebar Modal */}
@@ -59,10 +73,10 @@ export default function HistorialRutas({ onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-[90%] sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-[90%] sm:w-[456px] overflow-y-auto bg-white flex flex-col pt-[30px] px-[30px] rounded-l-[30px] z-70 shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between w-full mb-[30px]">
+        <div className="flex items-center justify-between w-full mb-[30px] shrink-0">
           <div className="flex gap-[20px] items-center">
             <div className="bg-[#e8f0fe] flex items-center justify-center rounded-[100px] w-[60px] h-[60px] shrink-0">
               <MdHistory className="text-[#155dfc] text-[32px]" />
@@ -82,7 +96,7 @@ export default function HistorialRutas({ onClose }) {
         </div>
 
         {/* History List */}
-        <div className="flex flex-col gap-[20px] w-full mb-[30px] pb-[40px]">
+        <div className="flex flex-col gap-[20px] w-full flex-1 pb-[100px]">
           {loading ? (
             <Spinner color="border-blue-500" text="Cargando historial..." />
           ) : history.length === 0 ? (
@@ -152,7 +166,34 @@ export default function HistorialRutas({ onClose }) {
             ))
           )}
         </div>
+
+        {/* Boton Borrar Historial */}
+        {!loading && history.length > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 p-[30px] bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="w-full bg-[#fff0f0] hover:bg-red-100 text-[#cd1e1e] border border-red-200 transition-colors rounded-[16px] py-[14px] flex justify-center items-center gap-2 shadow-sm hover:shadow-md pointer-events-auto"
+            >
+              <MdDelete className="text-[24px]" />
+              <span className="font-['Plus_Jakarta_Sans'] font-semibold text-[16px]">
+                Borrar historial
+              </span>
+            </button>
+          </div>
+        )}
       </motion.div>
+
+      {/* Modal Confirmacion */}
+      <ModalConfirmacion
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={clearHistory}
+        titulo="Borrar Historial"
+        mensaje="¿Estás seguro de que deseas eliminar todas las rutas registradas en tu historial? Esta acción no se puede deshacer."
+        textoConfirmar={isDeleting ? "Borrando..." : "Sí, borrar"}
+        textoCancelar="Cancelar"
+        colorConfirmar="bg-red-600 hover:bg-red-700"
+      />
     </>
   );
 }
