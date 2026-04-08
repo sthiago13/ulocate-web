@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose, MdEdit, MdSave } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
+import SelectField from './SelectField';
 
 export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
   const [nombre, setNombre] = useState('');
@@ -13,8 +14,7 @@ export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
       setNombre(usuario.Nombre || '');
       setCorreo(usuario.Correo || '');
       setRol(usuario.ID_Rol?.toString() || '1');
-      // Supongamos que hay un campo "Estado" o similar. Por ahora lo dejamos en false.
-      setInactiva(false);
+      setInactiva(usuario.Activo === false);
     }
   }, [usuario, isOpen]);
 
@@ -25,7 +25,7 @@ export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
       Nombre: nombre,
       Correo: correo,
       ID_Rol: parseInt(rol, 10),
-      // Inactivo: inactiva
+      Activo: !inactiva
     };
     if (onSave) onSave(updatedUser);
   };
@@ -61,9 +61,9 @@ export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
                 </div>
                 <div className="flex flex-col font-['Plus_Jakarta_Sans']">
                   <span className="font-bold text-[#101828] text-[20px] leading-[26px] truncate max-w-[200px]">
-                    {usuario?.Nombre || 'Usuario'}
+                    Editar Usuario
                   </span>
-                  <span className="font-semibold text-[#155dfc] text-[14px]">Editando usuario</span>
+                  <span className="font-semibold text-[#155dfc] text-[14px]">Actualizando datos</span>
                 </div>
               </div>
               <button
@@ -103,22 +103,16 @@ export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
               {/* Rol */}
               <div className="flex flex-col gap-2">
                 <label className="text-[14px] font-medium text-gray-700">Rol en el sistema</label>
-                <div className="relative">
-                  <select
-                    value={rol}
-                    onChange={(e) => setRol(e.target.value)}
-                    className="w-full appearance-none bg-[#f9f9f9] border border-gray-200 rounded-[12px] px-4 py-3 text-[#101828] focus:outline-none focus:border-[#155dfc] focus:ring-1 focus:ring-[#155dfc] transition-colors"
-                  >
-                    <option value="1">Estudiante (Normal)</option>
-                    <option value="2">Administrador</option>
-                  </select>
-                  {/* Flechita para el select */}
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
-                  </div>
-                </div>
+                <SelectField
+                  label=""
+                  name="rol"
+                  value={rol}
+                  onChange={(e) => setRol(e.target.value)}
+                  options={[
+                    { value: '1', label: 'Estudiante (Normal)' },
+                    { value: '2', label: 'Administrador' }
+                  ]}
+                />
               </div>
 
               {/* Cuenta Inactiva */}

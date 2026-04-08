@@ -144,7 +144,7 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
                           </div>
 
                           {/* Chips de Rol */}
-                          <div className="flex mt-1">
+                          <div className="flex flex-wrap mt-1 gap-2">
                             {isAdmin && (
                               <span className="flex items-center gap-1 text-[10px] font-bold text-[#e8701a] bg-[#ffeedd] px-1.5 py-0.5 rounded-md uppercase tracking-wider w-fit">
                                 <MdAdminPanelSettings className="text-[12px]" /> Admin
@@ -158,6 +158,11 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
                             {isInvitado && (
                               <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md uppercase tracking-wider w-fit">
                                 <MdHourglassEmpty className="text-[12px]" /> Pendiente
+                              </span>
+                            )}
+                            {usr.Activo === false && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md uppercase tracking-wider w-fit">
+                                <MdClose className="text-[12px]" /> Bloqueado
                               </span>
                             )}
                           </div>
@@ -201,26 +206,43 @@ export default function GestionarUsuarios({ isOpen, onClose }) {
         isOpen={!!editingUser}
         usuario={editingUser}
         onClose={() => setEditingUser(null)}
-        onSave={(updated) => {
-          // Here we could add supabase update logic
-          // For now, we simply update the state locally 
-          setUsuarios(prev => prev.map(u => u.ID_Usuario === updated.ID_Usuario ? updated : u));
-          setEditingUser(null);
+        onSave={async (updated) => {
+          const { error } = await supabase.from('Usuario').update({
+            Nombre: updated.Nombre,
+            Correo: updated.Correo,
+            ID_Rol: updated.ID_Rol,
+            Activo: updated.Activo
+          }).eq('ID_Usuario', updated.ID_Usuario);
+
+          if (!error) {
+            setUsuarios(prev => prev.map(u => u.ID_Usuario === updated.ID_Usuario ? updated : u));
+            setEditingUser(null);
+          } else {
+            console.error("Error actualizando usuario:", error);
+            alert("No se pudo actualizar el usuario.");
+          }
         }}
       />
 
       <InvitarUsuario
         isOpen={isInviting}
         onClose={() => setIsInviting(false)}
-        onInvite={(newUser) => {
-          // En una implementación real, esto haría un insert en Supabase
-          // y se le asignaría un ID. Por ahora, mockeamos el nuevo usuario:
-          const mockedUser = {
+        onInvite={async (newUser) => {
+          // Generamos un ID predeterminado temporal (usualmente el Auth DB resolvería esto)
+          const payload = {
             ...newUser,
-            ID_Usuario: Date.now().toString(),
+            ID_Usuario: window.crypto.randomUUID()
           };
-          setUsuarios(prev => [...prev, mockedUser]);
-          setIsInviting(false);
+
+          const { data, error } = await supabase.from('Usuario').insert(payload).select().single();
+          
+          if (!error && data) {
+             setUsuarios(prev => [...prev, data]);
+             setIsInviting(false);
+          } else {
+             console.error("Error creando invitación:", error);
+             alert("Fallo al registrar la invitación en base de datos.");
+          }
         }}
       />
     </>

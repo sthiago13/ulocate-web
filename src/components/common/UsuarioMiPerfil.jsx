@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import ModalConfirmacion from './ModalConfirmacion';
 import Spinner from './Spinner';
+import InputField from './InputField';
 
 export default function UsuarioMiPerfil({ onClose }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -222,45 +223,45 @@ export default function UsuarioMiPerfil({ onClose }) {
                 <div className="flex flex-col gap-[16px] w-full">
                   <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[16px] text-[#101828] mb-2">Seguridad</h3>
                   <div className="flex flex-col gap-[8px]">
-                    <label className="font-['Plus_Jakarta_Sans'] font-medium text-[14px] text-[#040f0f]">
-                      Contraseña actual
-                    </label>
-                    <input
+                    <InputField
+                      id="passActual"
+                      label="Contraseña actual"
                       type="password"
                       name="passActual"
                       value={formData.passActual}
                       onChange={handleChange}
                       placeholder="Requerido si cambias tu clave..."
-                      className="bg-white border border-[#090909] rounded-[8px] p-[12px] h-[62px] w-full font-['Plus_Jakarta_Sans'] text-[16px] text-[#040f0f] focus:outline-none focus:ring-2 focus:ring-[#155dfc]"
                     />
                   </div>
 
                   <div className="flex flex-col gap-[8px]">
-                    <label className="font-['Plus_Jakarta_Sans'] font-medium text-[14px] text-[#040f0f]">
-                      Contraseña nueva
-                    </label>
-                    <input
+                    <InputField
+                      id="passNueva"
+                      label="Contraseña nueva"
                       type="password"
                       name="passNueva"
                       value={formData.passNueva}
                       onChange={handleChange}
                       placeholder="Escribe tu nueva contraseña..."
-                      className="bg-white border border-[#090909] rounded-[8px] p-[12px] h-[62px] w-full font-['Plus_Jakarta_Sans'] text-[16px] text-[#040f0f] focus:outline-none focus:ring-2 focus:ring-[#155dfc]"
                     />
+                    {formData.passNueva.length > 0 && formData.passNueva.length < 6 && (
+                      <span className="text-xs text-red-500 mt-[-4px] ml-1">La contraseña debe tener al menos 6 caracteres</span>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-[8px]">
-                    <label className="font-['Plus_Jakarta_Sans'] font-medium text-[14px] text-[#040f0f]">
-                      Repite tu nueva contraseña
-                    </label>
-                    <input
+                    <InputField
+                      id="passRepetir"
+                      label="Repite tu nueva contraseña"
                       type="password"
                       name="passRepetir"
                       value={formData.passRepetir}
                       onChange={handleChange}
                       placeholder="Escribe de nuevo tu nueva contraseña..."
-                      className="bg-white border border-[#090909] rounded-[8px] p-[12px] h-[62px] w-full font-['Plus_Jakarta_Sans'] text-[16px] text-[#040f0f] focus:outline-none focus:ring-2 focus:ring-[#155dfc]"
                     />
+                    {formData.passRepetir.length > 0 && formData.passRepetir !== formData.passNueva && (
+                      <span className="text-xs text-red-500 mt-[-4px] ml-1">Las contraseñas no coinciden</span>
+                    )}
                   </div>
                 </div>
 

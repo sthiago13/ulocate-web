@@ -73,7 +73,7 @@ export default function HistorialRutas({ onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-[90%] sm:w-[456px] overflow-y-auto bg-white flex flex-col pt-[30px] px-[30px] rounded-l-[30px] z-70 shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col pt-[30px] px-[30px] rounded-none sm:rounded-l-[30px] z-[70] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
         {/* Header */}
         <div className="flex items-center justify-between w-full mb-[30px] shrink-0">

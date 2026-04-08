@@ -17,7 +17,8 @@ CREATE TABLE "Usuario"
     -- Enlazado con auth.users de Supabase
     "Nombre" VARCHAR(100) NOT NULL,
     "Correo" VARCHAR(100) UNIQUE NOT NULL,
-    "ID_Rol" INT NOT NULL
+    "ID_Rol" INT NOT NULL,
+    "Activo" BOOLEAN DEFAULT true
 );
 
 CREATE TABLE "Categoria"

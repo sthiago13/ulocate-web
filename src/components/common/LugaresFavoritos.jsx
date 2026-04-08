@@ -200,7 +200,7 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-[90%] sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
 
         {/* Header */}

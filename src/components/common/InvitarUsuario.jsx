@@ -9,17 +9,18 @@ export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
 
   const handleInvite = () => {
     // Validar y enviar
+    if (!correo.trim()) return;
+    
     const newUser = {
-      Nombre: nombre,
+      Nombre: nombre || null, // Nombre puede ser nulo en la invitación
       Correo: correo,
-      ID_Rol: parseInt(rol, 10),
+      ID_Rol: 3, // 3 = Pendiente
     };
     if (onInvite) onInvite(newUser);
 
     // Limpiar para la próxima vez
     setNombre('');
     setCorreo('');
-    setRol('1');
   };
 
   if (!isOpen) return null;
@@ -66,24 +67,15 @@ export default function InvitarUsuario({ isOpen, onClose, onInvite }) {
 
             {/* Formulario */}
             <div className="flex-1 flex flex-col gap-5 font-['Plus_Jakarta_Sans']">
-              {/* Rol */}
+              {/* Rol (Bloqueado a Pendiente) */}
               <div className="flex flex-col gap-2">
-                <label className="text-[14px] font-medium text-gray-700">Rol en el sistema</label>
-                <div className="relative">
-                  <select
-                    value={rol}
-                    onChange={(e) => setRol(e.target.value)}
-                    className="w-full appearance-none bg-[#f9f9f9] border border-gray-200 rounded-[12px] px-4 py-3 text-[#101828] focus:outline-none focus:border-[#155dfc] focus:ring-1 focus:ring-[#155dfc] transition-colors"
-                  >
-                    <option value="1">Estudiante (Normal)</option>
-                    <option value="2">Administrador</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
-                  </div>
+                <label className="text-[14px] font-medium text-gray-700">Rol Inicial</label>
+                <div className="w-full bg-gray-100 border border-gray-200 rounded-[12px] px-4 py-3 text-gray-500 font-medium">
+                  Pendiente (Invitación)
                 </div>
+                <p className="text-[12px] text-gray-500">
+                  El rol definitivo puede ser configurado una vez que el usuario se registre.
+                </p>
               </div>
 
               {/* Nombre Completo */}

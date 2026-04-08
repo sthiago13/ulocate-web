@@ -60,6 +60,30 @@ export default function BottomMenu({ className = '' }) {
     }, 10);
   };
 
+  const closeAllPanels = () => {
+    setIsMenuOpen(false);
+    setIsFavoritesOpen(false);
+    setIsProfileOpen(false);
+    setIsHistoryOpen(false);
+    setIsNotificationsOpen(false);
+    setIsAdminOpen(false);
+    setIsSearchOpen(false);
+    setIsGestionarLugaresOpen(false);
+    setIsGestionarUsuariosOpen(false);
+    setIsGestionarEventosOpen(false);
+    setIsGestionarCategoriasOpen(false);
+    setSelectedUbicacionId(null);
+    setIsGlobalEditorOpen(false);
+  };
+
+  const isMapActive = !(
+    isMenuOpen || isFavoritesOpen || isProfileOpen || isHistoryOpen || 
+    isNotificationsOpen || isAdminOpen || isSearchOpen || 
+    isGestionarLugaresOpen || isGestionarUsuariosOpen || 
+    isGestionarEventosOpen || isGestionarCategoriasOpen || 
+    selectedUbicacionId || isGlobalEditorOpen
+  );
+
   return (
     <>
       <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-[32px] shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center justify-around w-[80%] sm:w-[350px] md:w-[400px] h-[65px] px-6 z-40 ${className}`}>
@@ -67,20 +91,24 @@ export default function BottomMenu({ className = '' }) {
         {/* Menu Icon */}
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-black group"
+          className={`p-2.5 rounded-full transition-colors group ${isMenuOpen ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
         >
           <MdMenu className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
 
-        {/* Map Icon (Active) */}
-        <button className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors text-[#155dfc] group">
+        {/* Map Icon (Active only when on pristine map view) */}
+        <button 
+          onClick={closeAllPanels}
+          className={`p-2.5 rounded-full transition-colors group ${isMapActive ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
+          title="Ir al mapa base"
+        >
           <MdMap className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
 
         {/* Search Icon */}
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-black group"
+          className={`p-2.5 rounded-full transition-colors group ${isSearchOpen ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
         >
           <MdSearch className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>

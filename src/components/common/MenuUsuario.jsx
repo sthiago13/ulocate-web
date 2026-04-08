@@ -31,7 +31,7 @@ export default function MenuUsuario({ isAdmin, onClose, onOpenProfile, onOpenFav
     <>
       <div className="fixed inset-0 bg-black/20 z-40 transition-opacity" onClick={onClose} />
 
-      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-250px)] w-[276px] bg-white flex flex-col items-center justify-between p-[30px] rounded-[30px] z-[45] shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-32 left-[5%] sm:left-[calc(50%-200px)] w-[90%] sm:w-[400px] bg-white flex flex-col items-center justify-between p-[30px] rounded-[30px] z-[45] shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
         <div className="w-full flex-col flex gap-[14px]">
           <div className="flex items-center justify-between w-full">
             <h2 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[16px] leading-[18px] text-[#101828]">

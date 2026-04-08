@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'; // Ajusta la ruta según dónd
 import logoULocate from '../assets/logo_ulocate_final.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
+import ModalConfirmacion from './common/ModalConfirmacion';
 
 function NoTienesUnaCuenta({ className = '' }) {
   return (
@@ -44,14 +45,13 @@ export default function Login({ className = '' }) {
   // 1. Añadimos estados para capturar la información del formulario
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState({ isOpen: false, titulo: '', mensaje: '', color: '' });
 
   // 2. Transformamos la función en asíncrona para esperar a Supabase
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg(null); // Limpiamos errores anteriores
 
     console.log("Intentando iniciar sesión con:", email);
 
@@ -62,11 +62,20 @@ export default function Login({ className = '' }) {
 
     if (error) {
       console.error("Error devuelto por Supabase:", error.message);
-      // Traducimos el error clásico de credenciales inválidas para el usuario final
       if (error.message.includes('Invalid login credentials')) {
-        setErrorMsg('Correo o contraseña incorrectos.');
+        setModal({ 
+          isOpen: true, 
+          titulo: 'Acceso Denegado', 
+          mensaje: 'Contraseña incorrecta, verifique si la escribió correctamente, si la olvidó, puede recuperarla aquí abajo!', 
+          color: 'bg-[#cd1e1e] hover:bg-red-800' 
+        });
       } else {
-        setErrorMsg('Ocurrió un error al iniciar sesión. Intenta de nuevo.');
+        setModal({ 
+          isOpen: true, 
+          titulo: 'Error de Red', 
+          mensaje: 'Ocurrió un error al iniciar sesión. Intenta de nuevo.', 
+          color: 'bg-[#cd1e1e] hover:bg-red-800' 
+        });
       }
       setLoading(false);
       return;
@@ -90,15 +99,8 @@ export default function Login({ className = '' }) {
         {/* Header & Inputs */}
         <div className="flex flex-col gap-4 items-center w-full">
           <MensajeBienvenidaLogin className="mb-4 sm:w-[408px]" />
-          
-          {/* Mostramos el mensaje de error si existe */}
-          {errorMsg && (
-            <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm text-center font-medium">
-              {errorMsg}
-            </div>
-          )}
 
-          <div className="w-full sm:w-[534px] flex flex-col gap-4">
+          <div className="w-full flex-col flex gap-4 mt-2">
             {/* 4. Conectamos los Inputs con el estado */}
             <InputField 
               id="email"
@@ -130,12 +132,27 @@ export default function Login({ className = '' }) {
             {loading ? 'Cargando...' : 'Entrar'}
           </Button>
         </div>
-
       </form>
 
       {/* Footer */}
-      <NoTienesUnaCuenta className="mt-4" />
+      <div className="flex flex-col items-center gap-4 w-full mt-4">
+        <NoTienesUnaCuenta />
+        
+        <Link to="/recuperar" className="text-gray-500 hover:text-[#155dfc] font-['Plus_Jakarta_Sans'] font-medium text-[14px] transition-colors border-b border-transparent hover:border-[#155dfc]">
+          ¿Olvidó su contraseña? ¡Recupere el acceso aquí!
+        </Link>
+      </div>
 
+      <ModalConfirmacion 
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={() => setModal({ ...modal, isOpen: false })}
+        titulo={modal.titulo}
+        mensaje={modal.mensaje}
+        textoConfirmar="Entendido"
+        textoCancelar={null}
+        colorConfirmar={modal.color}
+      />
     </div>
   );
 }

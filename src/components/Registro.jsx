@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import logoULocate from '../assets/logo_ulocate_final.png';
 import Button from './common/Button';
 import InputField from './common/InputField';
+import ModalConfirmacion from './common/ModalConfirmacion';
 import { MdEmail } from 'react-icons/md';
 
 function YaTienesUnaCuenta({ className = '' }) {
@@ -47,18 +48,33 @@ export default function Registro({ className = '' }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState({ isOpen: false, titulo: '', mensaje: '', color: '' });
   
   // Nuevo estado para controlar la pantalla de éxito
   const [isSuccess, setIsSuccess] = useState(false); 
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setErrorMsg(null);
 
     if (password !== confirmPassword) {
-      setErrorMsg('Las contraseñas no coinciden.');
+      setModal({
+        isOpen: true,
+        titulo: 'Validación fallida',
+        mensaje: 'Las contraseñas no coinciden. Por favor, verifica e intenta de nuevo.',
+        color: 'bg-[#cd1e1e] hover:bg-red-800'
+      });
+      return;
+    }
+
+    // Front-end validación: Correo Institucional obligatorio
+    if (!email.toLowerCase().endsWith('@unet.edu.ve')) {
+      setModal({
+        isOpen: true,
+        titulo: 'Correo Inválido',
+        mensaje: 'Debe ser un correo institucional activo de la UNET (@unet.edu.ve) para poder registrarse en U-Locate.',
+        color: 'bg-[#cd1e1e] hover:bg-red-800'
+      });
       return;
     }
 
@@ -77,7 +93,12 @@ export default function Registro({ className = '' }) {
 
     if (authError) {
       console.error("Error de Auth:", authError.message);
-      setErrorMsg(authError.message); 
+      setModal({
+        isOpen: true,
+        titulo: 'Error en el Registro',
+        mensaje: authError.message.includes('already registered') ? 'Este correo ya se encuentra registrado en el sistema. Inicia sesión o recupera tu contraseña.' : authError.message,
+        color: 'bg-[#cd1e1e] hover:bg-red-800'
+      });
       setLoading(false);
       return;
     }
@@ -122,14 +143,8 @@ export default function Registro({ className = '' }) {
           <form onSubmit={handleRegister} className="flex flex-col gap-[14px] items-center w-full sm:w-[556px]">
             <div className="flex flex-col gap-4 items-center w-full">
               <MensajeCreacionDeCuenta className="mb-4 sm:w-[408px]" />
-              
-              {errorMsg && (
-                <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm text-center font-medium">
-                  {errorMsg}
-                </div>
-              )}
 
-              <div className="w-full sm:w-[534px] flex flex-col gap-4">
+              <div className="w-full sm:w-[534px] flex flex-col gap-4 mt-2">
                 <InputField 
                   id="nombre"
                   label="Nombre completo"
@@ -157,6 +172,10 @@ export default function Registro({ className = '' }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                {password.length > 0 && password.length < 6 && (
+                  <span className="text-xs text-red-500 mt-[-8px] ml-1">La contraseña debe tener al menos 6 caracteres</span>
+                )}
+                
                 <InputField 
                   id="confirm-password"
                   label="Confirmar Contraseña"
@@ -166,6 +185,9 @@ export default function Registro({ className = '' }) {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {confirmPassword.length > 0 && confirmPassword !== password && (
+                  <span className="text-xs text-red-500 mt-[-8px] ml-1">Las contraseñas no coinciden</span>
+                )}
               </div>
             </div>
             
@@ -182,6 +204,17 @@ export default function Registro({ className = '' }) {
           <YaTienesUnaCuenta className="mt-4" />
         </>
       )}
+
+      <ModalConfirmacion 
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        onConfirm={() => setModal({ ...modal, isOpen: false })}
+        titulo={modal.titulo}
+        mensaje={modal.mensaje}
+        textoConfirmar="Entendido"
+        textoCancelar={null}
+        colorConfirmar={modal.color}
+      />
     </div>
   );
 }
