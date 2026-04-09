@@ -19,6 +19,7 @@ export default function GestionarLugares({ isOpen, onClose, onLocationSelect, in
   // Double Confirmation State
   // phase: 0 = closed, 1 = first confirm, 2 = second confirm
   const [deleteConf, setDeleteConf] = useState({ phase: 0, item: null });
+  const [errorConflict, setErrorConflict] = useState({ isOpen: false, item: null });
 
   const openEditor = (lugar = null) => {
     setLugarToEdit(lugar);
@@ -71,6 +72,11 @@ export default function GestionarLugares({ isOpen, onClose, onLocationSelect, in
          setLugares(prev => prev.filter(l => l.ID_Ubicacion !== target.ID_Ubicacion));
       } else {
          console.error("Error al eliminar", error);
+         if (error.code === '23503') {
+           setErrorConflict({ isOpen: true, item: target });
+         } else {
+           alert("No se pudo eliminar la ubicación. Error: " + error.message);
+         }
       }
     }
     setDeleteConf({ phase: 0, item: null });
@@ -244,6 +250,18 @@ export default function GestionarLugares({ isOpen, onClose, onLocationSelect, in
             textoConfirmar="SÍ, ELIMINAR DEFINITIVAMENTE"
             textoCancelar="No, me he equivocado"
             colorConfirmar="bg-red-600 hover:bg-red-700 animate-pulse"
+          />
+
+          {/* Modal: Error de Conflicto (Relacional) */}
+          <ModalConfirmacion
+            isOpen={errorConflict.isOpen}
+            onClose={() => setErrorConflict({ isOpen: false, item: null })}
+            onConfirm={() => setErrorConflict({ isOpen: false, item: null })}
+            titulo="No se puede eliminar"
+            mensaje={`La ubicación "${errorConflict.item?.Nombre}" no puede ser eliminada porque está guardada en los favoritos de uno o más usuarios. Debes eliminar esas referencias primero antes de borrarla del mapa.`}
+            textoConfirmar="Entendido"
+            textoCancelar=""
+            colorConfirmar="bg-[#155dfc] hover:bg-blue-700"
           />
         </>
       )}
