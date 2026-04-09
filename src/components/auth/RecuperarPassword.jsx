@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import logoULocate from '../assets/logo_ulocate_final.png';
-import Button from './common/Button';
-import InputField from './common/InputField';
-import ModalConfirmacion from './common/ModalConfirmacion';
+import { supabase } from '../../lib/supabaseClient';
+import logoULocate from '../../assets/logo_ulocate_final.png';
+import Button from '../common/Button';
+import InputField from '../common/InputField';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import { MdEmail } from 'react-icons/md';
 
 function LogoEstandarULocate({ className = '' }) {

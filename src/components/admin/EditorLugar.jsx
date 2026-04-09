@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MdClose, MdSave, MdCloudUpload, MdImage, MdDelete, MdCrop } from 'react-icons/md';
 import { supabase } from '../../lib/supabaseClient';
-import InputField from './InputField';
-import SelectField from './SelectField';
-import Button from './Button';
-import ModalConfirmacion from './ModalConfirmacion';
+import InputField from '../common/InputField';
+import SelectField from '../common/SelectField';
+import Button from '../common/Button';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../../utils/cropImage';
 
@@ -22,7 +22,8 @@ function ToggleButton({ checked, onChange }) {
 }
 
 export default function EditorLugar({ isOpen, onClose, onSuccess, lugarToEdit }) {
-  const isEditing = !!lugarToEdit;
+  // isEditing solo es true si hay una ubicación existente con ID real de Supabase
+  const isEditing = !!lugarToEdit?.ID_Ubicacion;
   const initialForm = {
     nombre: '',
     descripcion: '',
@@ -74,8 +75,10 @@ export default function EditorLugar({ isOpen, onClose, onSuccess, lugarToEdit })
         idZona: lugarToEdit.ID_Zona?.toString() || '',
         idNodo: lugarToEdit.ID_Nodo?.toString() || ''
       });
-      // Traer imagenes guardadas de esta ubicación
-      fetchImagenesExtra();
+      // Solo cargar imágenes si es una edición real (tiene ID_Ubicacion)
+      if (lugarToEdit.ID_Ubicacion) {
+        fetchImagenesExtra();
+      }
     } else if (!lugarToEdit && isOpen && categorias.length > 0) {
       setFormData(prev => ({ 
         ...initialForm, 

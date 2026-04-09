@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdEdit, MdSave, MdSend, MdMap } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import InputField from './InputField';
-import Button from './Button';
+import InputField from '../common/InputField';
+import Button from '../common/Button';
 
 export default function EditorZona({ isOpen, onClose, zonaToEdit, onSuccess }) {
   const [nombre, setNombre] = useState('');

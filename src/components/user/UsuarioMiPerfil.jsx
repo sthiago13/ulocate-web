@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdEdit, MdSave } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import ModalConfirmacion from './ModalConfirmacion';
-import Spinner from './Spinner';
-import InputField from './InputField';
+import ModalConfirmacion from '../common/ModalConfirmacion';
+import Spinner from '../common/Spinner';
+import InputField from '../common/InputField';
 
 export default function UsuarioMiPerfil({ onClose }) {
   const [isEditing, setIsEditing] = useState(false);

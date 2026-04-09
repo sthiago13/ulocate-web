@@ -4,8 +4,8 @@ import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import { formatRelativeDate } from '../../utils/formatters';
-import Spinner from './Spinner';
-import Button from './Button';
+import Spinner from '../common/Spinner';
+import Button from '../common/Button';
 
 function ToggleButton({ checked, onChange }) {
   return (

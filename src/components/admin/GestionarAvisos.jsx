@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdCampaign, MdEdit, MdAdd, MdPlace, MdDelete, MdCheckCircle, MdCancel, MdSchedule } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabaseClient';
-import SearchBar from './common/SearchBar';
-import Spinner from './common/Spinner';
-import ModalConfirmacion from './common/ModalConfirmacion';
+import { supabase } from '../../lib/supabaseClient';
+import SearchBar from '../common/SearchBar';
+import Spinner from '../common/Spinner';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import EditorAviso from './EditorAviso';
-import { formatRelativeDate } from '../utils/formatters';
+import { formatRelativeDate } from '../../utils/formatters';
 
 // Determina si una alerta está efectivamente activa considerando su fecha de expiración
 function isAlertaVigente(alerta) {

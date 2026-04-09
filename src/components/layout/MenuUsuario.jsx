@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { MdPerson, MdStar, MdHistory, MdNotificationsActive, MdAdminPanelSettings, MdClose } from 'react-icons/md';
-import ModalConfirmacion from './ModalConfirmacion';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 
 export default function MenuUsuario({ isAdmin, onClose, onOpenProfile, onOpenFavorites, onOpenHistory, onOpenNotifications, onOpenAdmin }) {
   const navigate = useNavigate();

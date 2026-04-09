@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose, MdCategory, MdEdit, MdSave, MdSend } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import InputField from './common/InputField';
-import IconPicker from './common/IconPicker';
-import Button from './common/Button';
+import InputField from '../common/InputField';
+import IconPicker from '../common/IconPicker';
+import Button from '../common/Button';
 
 export default function EditorCategoria({ isOpen, onClose, categoriaToEdit, onSave }) {
   const [nombre, setNombre] = useState('');

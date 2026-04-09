@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdPersonAdd, MdAdminPanelSettings, MdPerson, MdEmail, MdEdit, MdSchool, MdHourglassEmpty } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import SearchBar from './SearchBar';
-import Spinner from './Spinner';
+import SearchBar from '../common/SearchBar';
+import Spinner from '../common/Spinner';
 import EditarUsuario from './EditarUsuario';
 import InvitarUsuario from './InvitarUsuario';
 

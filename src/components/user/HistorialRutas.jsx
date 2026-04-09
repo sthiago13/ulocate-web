@@ -3,8 +3,8 @@ import { MdClose, MdHistory, MdLocationOn, MdDirections, MdAccessTime, MdDelete 
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import { formatRelativeDate } from '../../utils/formatters';
-import Spinner from './Spinner';
-import ModalConfirmacion from './ModalConfirmacion';
+import Spinner from '../common/Spinner';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 
 export default function HistorialRutas({ onClose }) {
   const [loading, setLoading] = useState(true);

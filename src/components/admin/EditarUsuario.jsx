@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MdClose, MdEdit, MdSave } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import SelectField from './SelectField';
+import SelectField from '../common/SelectField';
 
 export default function EditarUsuario({ isOpen, onClose, usuario, onSave }) {
   const [nombre, setNombre] = useState('');

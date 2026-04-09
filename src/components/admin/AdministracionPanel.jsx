@@ -5,11 +5,9 @@ export default function AdministracionPanel({ onClose, onOpenGestionarLugares, o
   const adminAreas = [
     { label: "Gestionar Zonas", icon: MdMap, action: onOpenGestionarZonas || (() => console.log('Zonas')) },
     { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
-    { label: "Gestionar Nodos/Tramos", icon: MdTimeline, action: () => console.log('Tramos') },
+    { label: "Gestionar Nodos/Tramos", icon: MdTimeline, action: onOpenGestionarTramos || (() => console.log('Tramos')) },
     { label: "Gestionar Lugares", icon: MdPlace, action: onOpenGestionarLugares || (() => console.log('Lugares')) },
-    { label: "Gestionar Tramos", icon: MdTimeline, action: onOpenGestionarTramos || (() => console.log('Tramos')) },
     { label: "Gestionar Usuarios", icon: MdPeople, action: onOpenGestionarUsuarios || (() => console.log('Usuarios')) },
-    { label: "Gestionar Categorías", icon: MdCategory, action: onOpenGestionarCategorias || (() => console.log('Categorias')) },
     { label: "Gestionar Avisos", icon: MdEvent, action: onOpenGestionarAvisos || (() => console.log('Eventos')) },
   ];
 

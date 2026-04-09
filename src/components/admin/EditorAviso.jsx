@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MdClose, MdCampaign, MdEdit, MdSave, MdSend, MdSearch, MdPlace } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabaseClient';
-import InputField from './common/InputField';
-import Button from './common/Button';
+import { supabase } from '../../lib/supabaseClient';
+import InputField from '../common/InputField';
+import Button from '../common/Button';
 
 /**
  * EditorAviso — componente unificado para crear y editar alertas globales.

@@ -3,11 +3,10 @@ import { MdClose, MdStarBorder, MdStar, MdChevronLeft, MdChevronRight, MdDirecti
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import { getUbicaciones } from '../../utils/localDB';
-import ModalConfirmacion from './ModalConfirmacion';
-import ModalFormulario from './ModalFormulario';
+import ModalConfirmacion from '../common/ModalConfirmacion';
+import ModalFormulario from '../common/ModalFormulario';
 
-export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit }) {
+export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit, onRouteRequest }) {
   const [ubicacion, setUbicacion] = useState(null);
   const [imagenes, setImagenes] = useState([]);
   const [imgIndex, setImgIndex] = useState(0);
@@ -30,28 +29,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
     const fetchAll = async () => {
       setLoading(true);
       
-      let targetId = ubicacionId;
-
-      // 1. Detección de ID LOCAL
-      if (typeof ubicacionId === 'string' && ubicacionId.startsWith('ubi_')) {
-        const localData = getUbicaciones().find(u => u.id === ubicacionId);
-        if (localData && localData.supabaseId) {
-          // It's synced with Supabase, switch the targetId to Supabase ID and continue
-          targetId = localData.supabaseId;
-        } else if (localData) {
-          // Local only, no Supabase sync yet
-          setUbicacion({
-            ID_Ubicacion: localData.id,
-            Nombre: localData.nombre,
-            Descripcion: localData.descripcion,
-            Categoria: { Nombre_Categoria: localData.categoria, Icono: 'MdPlace' },
-            ID_Nodo: localData.nodeId
-          });
-          setImagenes([]);
-          setLoading(false);
-          return;
-        }
-      }
+      const targetId = ubicacionId;
 
       // 1. Obtener Usuario
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -171,17 +149,13 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
   };
 
   const handleTrazarRuta = () => {
-    if (ubicacion && (ubicacion.ID_Nodo || ubicacion.nodeId)) {
-      const ubiTarget = {
-        nodeId: ubicacion.ID_Nodo || ubicacion.nodeId,
-        Nombre: ubicacion.Nombre
-      };
-      // Usar localStorage y despachar el evento que CampusMap escucha
-      localStorage.setItem('active_route_target', JSON.stringify(ubiTarget));
-      window.dispatchEvent(new Event('route_triggered'));
+    if (ubicacion && ubicacion.ID_Nodo) {
+      if (onRouteRequest) {
+        onRouteRequest(ubicacion); // Pasamos el objeto completo de Supabase
+      }
       onClose(); // Cerrar la tarjeta para ver el mapa
     } else {
-      alert("No se puede trazar ruta: Esta ubicación no está asociada a un nodo del mapa.");
+      alert('No se puede trazar ruta: Esta ubicación no está asociada a un nodo del mapa.');
     }
   };
 

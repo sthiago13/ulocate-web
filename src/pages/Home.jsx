@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import HeaderApp from '../components/common/HeaderApp';
-import BottomMenu from '../components/common/BottomMenu';
-import CampusMap from '../components/CampusMap';
-import TarjetaUbicacion from '../components/common/TarjetaUbicacion';
+import React, { useState, useRef } from 'react';
+import HeaderApp from '../components/layout/HeaderApp';
+import BottomMenu from '../components/layout/BottomMenu';
+import CampusMap from '../components/map/CampusMap';
 
 export default function Home() {
   const [isRouteAdminMode, setIsRouteAdminMode] = useState(false);
-  const [selectedUbiId, setSelectedUbiId] = useState(null);
 
-  // Escucha evento global para abrir la tarjeta desde cualquier lugar (Buscador, Historial, etc.)
-  useEffect(() => {
-    const handleSelect = (e) => {
-      if (e.detail?.id) setSelectedUbiId(e.detail.id);
-    };
-    window.addEventListener('select_location', handleSelect);
-    return () => window.removeEventListener('select_location', handleSelect);
-  }, []);
+  // Ref para comunicar BottomMenu → CampusMap (startRoute)
+  const campusMapRef = useRef(null);
+
+  // Ref para comunicar CampusMap → BottomMenu (abrir TarjetaUbicacion al clic en pin)
+  const selectLocationRef = useRef(null);
 
   return (
     <div className="flex flex-col h-screen w-full bg-gray-100 relative font-sans overflow-hidden">
@@ -26,26 +21,25 @@ export default function Home() {
       {/* Map Container Area */}
       <div className="flex-1 relative w-full bg-[#E5E5E5]">
         <CampusMap
+          ref={campusMapRef}
           isRouteAdminMode={isRouteAdminMode}
           onExitAdminMode={() => setIsRouteAdminMode(false)}
-          onUbicacionSelect={(id) => setSelectedUbiId(id)}
+          onUbicacionSelect={(id) => {
+            // Delegar al BottomMenu para abrir TarjetaUbicacion
+            if (selectLocationRef.current?.handleLocationSelect) {
+              selectLocationRef.current.handleLocationSelect(id);
+            }
+          }}
         />
       </div>
 
-      {/* Componente de detalle (Portalized inside) */}
-      {selectedUbiId && (
-        <TarjetaUbicacion
-          ubicacionId={selectedUbiId}
-          onClose={() => setSelectedUbiId(null)}
-        />
-      )}
-
       {/* Navigation Options Menu (Portal inside) */}
       <BottomMenu
+        ref={selectLocationRef}
         onOpenAdminRoutes={() => setIsRouteAdminMode(true)}
+        campusMapRef={campusMapRef}
       />
 
     </div>
   );
 }
-

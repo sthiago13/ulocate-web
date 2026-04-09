@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdMap, MdEdit, MdAdd, MdDelete } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import SearchBar from './SearchBar';
-import Spinner from './Spinner';
-import ModalConfirmacion from './ModalConfirmacion';
+import SearchBar from '../common/SearchBar';
+import Spinner from '../common/Spinner';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import EditorZona from './EditorZona';
 
 export default function GestionarZonas({ isOpen, onClose }) {
@@ -70,7 +70,6 @@ export default function GestionarZonas({ isOpen, onClose }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/40 z-[70] transition-opacity"
-              onClick={onClose}
             />
 
             {/* Panel Derecha */}

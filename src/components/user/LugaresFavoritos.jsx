@@ -3,11 +3,11 @@ import { MdClose, MdStar, MdLocationOn, MdEdit, MdRestaurant, MdTheaterComedy } 
 import * as MdIcons from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import ResultCard from './ResultCard';
-import ModalConfirmacion from './ModalConfirmacion';
-import ModalFormulario from './ModalFormulario';
-import TarjetaUbicacion from './TarjetaUbicacion';
-import Spinner from './Spinner';
+import ResultCard from '../common/ResultCard';
+import ModalConfirmacion from '../common/ModalConfirmacion';
+import ModalFormulario from '../common/ModalFormulario';
+import TarjetaUbicacion from '../map/TarjetaUbicacion';
+import Spinner from '../common/Spinner';
 
 const FavItem = ({ fav, onEdit, onDelete, onViewLocation }) => {
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);

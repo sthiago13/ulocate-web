@@ -1,10 +1,10 @@
 import React from 'react';
-import RecuperarPassword from '../components/RecuperarPassword';
+import Registro from '../components/auth/Registro';
 
-export default function DesktopRecuperar() {
+export default function PanelRegistro() {
   return (
     <div className="min-h-screen bg-[#101828] flex items-center justify-center p-4 w-full">
-      <RecuperarPassword />
+      <Registro />
     </div>
   );
 }

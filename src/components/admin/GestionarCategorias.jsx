@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { MdClose, MdCategory, MdEdit, MdAdd, MdDelete } from 'react-icons/md';
 import * as mdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabaseClient';
-import SearchBar from './common/SearchBar';
-import Spinner from './common/Spinner';
-import ModalConfirmacion from './common/ModalConfirmacion';
+import { supabase } from '../../lib/supabaseClient';
+import SearchBar from '../common/SearchBar';
+import Spinner from '../common/Spinner';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import EditorCategoria from './EditorCategoria';
 
 export default function GestionarCategorias({ isOpen, onClose }) {

@@ -1,10 +1,10 @@
 import React from 'react';
-import Login from '../components/Login';
+import RecuperarPassword from '../components/auth/RecuperarPassword';
 
-export default function DesktopLogin() {
+export default function PanelRecuperar() {
   return (
     <div className="min-h-screen bg-[#101828] flex items-center justify-center p-4 w-full">
-      <Login />
+      <RecuperarPassword />
     </div>
   );
 }

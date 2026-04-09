@@ -1,38 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { MdMenu, MdMap, MdSearch } from 'react-icons/md';
-import TarjetaUbicacion from './TarjetaUbicacion';
+import TarjetaUbicacion from '../map/TarjetaUbicacion';
 import MenuUsuario from './MenuUsuario';
-import SearchPanel from './SearchPanel';
-import UsuarioMiPerfil from './UsuarioMiPerfil';
-import LugaresFavoritos from './LugaresFavoritos';
-import HistorialRutas from './HistorialRutas';
-import Notificaciones from './Notificaciones';
-import AdministracionPanel from './AdministracionPanel';
-import GestionarLugares from './GestionarLugares';
-import GestionarUsuarios from './GestionarUsuarios';
-import GestionarAvisos from '../GestionarAvisos';
-import GestionarCategorias from '../GestionarCategorias';
-import GestionarZonas from './GestionarZonas';
-import EditorLugar from './EditorLugar';
+import SearchPanel from '../map/SearchPanel';
+import UsuarioMiPerfil from '../user/UsuarioMiPerfil';
+import LugaresFavoritos from '../user/LugaresFavoritos';
+import HistorialRutas from '../user/HistorialRutas';
+import Notificaciones from '../user/Notificaciones';
+import AdministracionPanel from '../admin/AdministracionPanel';
+import GestionarLugares from '../admin/GestionarLugares';
+import GestionarUsuarios from '../admin/GestionarUsuarios';
+import GestionarAvisos from '../admin/GestionarAvisos';
+import GestionarCategorias from '../admin/GestionarCategorias';
+import GestionarZonas from '../admin/GestionarZonas';
+import EditorLugar from '../admin/EditorLugar';
 import { supabase } from '../../lib/supabaseClient';
 
-export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isGestionarLugaresOpen, setIsGestionarLugaresOpen] = useState(false);
+/**
+ * BottomMenu recibe `campusMapRef` que es un ref con el método `startRoute(ubicacion)`.
+ * Este patrón evita el uso de localStorage/window events para comunicar
+ * TarjetaUbicacion → CampusMap.
+ */
+const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminRoutes, campusMapRef }, ref) {
+  const [isMenuOpen,              setIsMenuOpen]              = useState(false);
+  const [isSearchOpen,            setIsSearchOpen]            = useState(false);
+  const [isProfileOpen,           setIsProfileOpen]           = useState(false);
+  const [isFavoritesOpen,         setIsFavoritesOpen]         = useState(false);
+  const [isHistoryOpen,           setIsHistoryOpen]           = useState(false);
+  const [isNotificationsOpen,     setIsNotificationsOpen]     = useState(false);
+  const [isAdminOpen,             setIsAdminOpen]             = useState(false);
+  const [isGestionarLugaresOpen,  setIsGestionarLugaresOpen]  = useState(false);
   const [isGestionarUsuariosOpen, setIsGestionarUsuariosOpen] = useState(false);
-  const [isGestionarAvisosOpen, setIsGestionarAvisosOpen] = useState(false);
+  const [isGestionarAvisosOpen,   setIsGestionarAvisosOpen]   = useState(false);
   const [isGestionarCategoriasOpen, setIsGestionarCategoriasOpen] = useState(false);
-  const [isGestionarZonasOpen, setIsGestionarZonasOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [selectedUbicacionId, setSelectedUbicacionId] = useState(null);
-  const [isGlobalEditorOpen, setIsGlobalEditorOpen] = useState(false);
-  const [globalLugarToEdit, setGlobalLugarToEdit] = useState(null);
+  const [isGestionarZonasOpen,    setIsGestionarZonasOpen]    = useState(false);
+  const [isAdmin,                 setIsAdmin]                 = useState(false);
+  const [selectedUbicacionId,     setSelectedUbicacionId]     = useState(null);
+  const [isGlobalEditorOpen,      setIsGlobalEditorOpen]      = useState(false);
+  const [globalLugarToEdit,       setGlobalLugarToEdit]       = useState(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -52,15 +57,28 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
     fetchUserRole();
   }, []);
 
-  const handleLocationSelect = (id) => {
+  const handleLocationSelect = useCallback((id) => {
     setIsSearchOpen(false);
     setIsFavoritesOpen(false);
-    // Para forzar la re-renderizacion limpia de la tarjeta si ya estaba abierta con otro ID
+    // Forzar re-renderización limpia si ya había otra tarjeta abierta
     setSelectedUbicacionId(null);
     setTimeout(() => {
       setSelectedUbicacionId(id);
     }, 10);
-  };
+  }, []);
+
+  /**
+   * Callback para que TarjetaUbicacion solicite trazar ruta.
+   * Llama directamente a `startRoute` del CampusMap via ref.
+   */
+  const handleRouteRequest = useCallback((ubicacion) => {
+    if (campusMapRef?.current?.startRoute) {
+      campusMapRef.current.startRoute(ubicacion);
+    }
+  }, [campusMapRef]);
+
+  // Exponer handleLocationSelect al padre (Home) para que CampusMap abra tarjetas via pin click
+  useImperativeHandle(ref, () => ({ handleLocationSelect }), [handleLocationSelect]);
 
   const closeAllPanels = () => {
     setIsMenuOpen(false);
@@ -80,10 +98,10 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
   };
 
   const isMapActive = !(
-    isMenuOpen || isFavoritesOpen || isProfileOpen || isHistoryOpen || 
-    isNotificationsOpen || isAdminOpen || isSearchOpen || 
-    isGestionarLugaresOpen || isGestionarUsuariosOpen || 
-    isGestionarAvisosOpen || isGestionarCategoriasOpen || 
+    isMenuOpen || isFavoritesOpen || isProfileOpen || isHistoryOpen ||
+    isNotificationsOpen || isAdminOpen || isSearchOpen ||
+    isGestionarLugaresOpen || isGestionarUsuariosOpen ||
+    isGestionarAvisosOpen || isGestionarCategoriasOpen ||
     isGestionarZonasOpen || selectedUbicacionId || isGlobalEditorOpen
   );
 
@@ -99,8 +117,8 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
           <MdMenu className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
 
-        {/* Map Icon (Active only when on pristine map view) */}
-        <button 
+        {/* Map Icon */}
+        <button
           onClick={closeAllPanels}
           className={`p-2.5 rounded-full transition-colors group ${isMapActive ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
           title="Ir al mapa base"
@@ -122,26 +140,11 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         <MenuUsuario
           isAdmin={isAdmin}
           onClose={() => setIsMenuOpen(false)}
-          onOpenFavorites={() => {
-            setIsMenuOpen(false);
-            setIsFavoritesOpen(true);
-          }}
-          onOpenProfile={() => {
-            setIsMenuOpen(false);
-            setIsProfileOpen(true);
-          }}
-          onOpenHistory={() => {
-            setIsMenuOpen(false);
-            setIsHistoryOpen(true);
-          }}
-          onOpenNotifications={() => {
-            setIsMenuOpen(false);
-            setIsNotificationsOpen(true);
-          }}
-          onOpenAdmin={() => {
-            setIsMenuOpen(false);
-            setIsAdminOpen(true);
-          }}
+          onOpenFavorites={() => { setIsMenuOpen(false); setIsFavoritesOpen(true); }}
+          onOpenProfile={() => { setIsMenuOpen(false); setIsProfileOpen(true); }}
+          onOpenHistory={() => { setIsMenuOpen(false); setIsHistoryOpen(true); }}
+          onOpenNotifications={() => { setIsMenuOpen(false); setIsNotificationsOpen(true); }}
+          onOpenAdmin={() => { setIsMenuOpen(false); setIsAdminOpen(true); }}
         />
       )}
 
@@ -167,26 +170,11 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       {isAdminOpen && (
         <AdministracionPanel
           onClose={() => setIsAdminOpen(false)}
-          onOpenGestionarLugares={() => {
-            setIsAdminOpen(false);
-            setIsGestionarLugaresOpen(true);
-          }}
-          onOpenGestionarUsuarios={() => {
-            setIsAdminOpen(false);
-            setIsGestionarUsuariosOpen(true);
-          }}
-          onOpenGestionarAvisos={() => {
-            setIsAdminOpen(false);
-            setIsGestionarAvisosOpen(true);
-          }}
-          onOpenGestionarCategorias={() => {
-            setIsAdminOpen(false);
-            setIsGestionarCategoriasOpen(true);
-          }}
-          onOpenGestionarZonas={() => {
-            setIsAdminOpen(false);
-            setIsGestionarZonasOpen(true);
-          }}
+          onOpenGestionarLugares={() => { setIsAdminOpen(false); setIsGestionarLugaresOpen(true); }}
+          onOpenGestionarUsuarios={() => { setIsAdminOpen(false); setIsGestionarUsuariosOpen(true); }}
+          onOpenGestionarAvisos={() => { setIsAdminOpen(false); setIsGestionarAvisosOpen(true); }}
+          onOpenGestionarCategorias={() => { setIsAdminOpen(false); setIsGestionarCategoriasOpen(true); }}
+          onOpenGestionarZonas={() => { setIsAdminOpen(false); setIsGestionarZonasOpen(true); }}
           onOpenGestionarTramos={() => {
             setIsAdminOpen(false);
             if (onOpenAdminRoutes) onOpenAdminRoutes();
@@ -228,16 +216,17 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         />
       )}
 
-      {/* Tarjeta de Ubicacion Centralizada */}
+      {/* Tarjeta de Ubicación Centralizada */}
       {selectedUbicacionId && (
         <TarjetaUbicacion
           ubicacionId={selectedUbicacionId}
           onClose={() => setSelectedUbicacionId(null)}
           isAdmin={isAdmin}
           onEdit={(lugar) => {
-             setGlobalLugarToEdit(lugar);
-             setIsGlobalEditorOpen(true);
+            setGlobalLugarToEdit(lugar);
+            setIsGlobalEditorOpen(true);
           }}
+          onRouteRequest={handleRouteRequest}
         />
       )}
 
@@ -248,7 +237,6 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
         lugarToEdit={globalLugarToEdit}
         onSuccess={() => {
           setIsGlobalEditorOpen(false);
-          // Forzar refresh de TarjetaUbicacion remontandola
           const tId = globalLugarToEdit.ID_Ubicacion;
           setSelectedUbicacionId(null);
           setTimeout(() => setSelectedUbicacionId(tId), 10);
@@ -256,4 +244,6 @@ export default function BottomMenu({ className = '', onOpenAdminRoutes }) {
       />
     </>
   );
-}
+});
+
+export default BottomMenu;

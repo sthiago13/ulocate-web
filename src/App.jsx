@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient' // Ajusta si la ruta es distinta
 
 import LandingPage from './pages/LandingPage'
-import DesktopLogin from './pages/DesktopLogin'
-import DesktopRegistro from './pages/DesktopRegistro'
-import DesktopRecuperar from './pages/DesktopRecuperar'
+import PanelLogin from './pages/PanelLogin'
+import PanelRegistro from './pages/PanelRegistro'
+import PanelRecuperar from './pages/PanelRecuperar'
 import Home from './pages/Home'
 
 function App() {
@@ -72,15 +72,15 @@ function App() {
         {/* Rutas para invitados (Si ya tiene sesión, lo mandamos directo al Home) */}
         <Route 
           path="/login" 
-          element={!session ? <DesktopLogin /> : <Navigate to="/home" replace />} 
+          element={!session ? <PanelLogin /> : <Navigate to="/home" replace />} 
         />
         <Route 
           path="/registro" 
-          element={!session ? <DesktopRegistro /> : <Navigate to="/home" replace />} 
+          element={!session ? <PanelRegistro /> : <Navigate to="/home" replace />} 
         />
         <Route 
           path="/recuperar" 
-          element={!session ? <DesktopRecuperar /> : <Navigate to="/home" replace />} 
+          element={!session ? <PanelRecuperar /> : <Navigate to="/home" replace />} 
         />
 
         {/* Rutas Protegidas (Si NO tiene sesión, lo regresamos al Login) */}

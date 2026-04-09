@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MdClose, MdSearch, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import EditorLugar from './EditorLugar';
-import ModalConfirmacion from './ModalConfirmacion';
-import SearchBar from './SearchBar';
-import ResultCard from './ResultCard';
+import ModalConfirmacion from '../common/ModalConfirmacion';
+import SearchBar from '../common/SearchBar';
+import ResultCard from '../common/ResultCard';
 import { supabase } from '../../lib/supabaseClient';
-import Spinner from './Spinner';
+import Spinner from '../common/Spinner';
 
 export default function GestionarLugares({ isOpen, onClose, onLocationSelect }) {
   const [searchTerm, setSearchTerm] = useState('');

@@ -3,19 +3,10 @@ import { createPortal } from 'react-dom';
 import { MdClose, MdPlace } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-import ResultCard from './ResultCard';
-import SearchBar from './SearchBar';
-import { getUbicaciones } from '../../utils/localDB';
+import ResultCard from '../common/ResultCard';
+import SearchBar from '../common/SearchBar';
 import { supabase } from '../../lib/supabaseClient';
-import Spinner from './Spinner';
-
-const CATEGORY_ICONS = {
-  'Académico':      '🎓',
-  'Alimentación':   '🍽️',
-  'Servicios':      '🛠️',
-  'Administrativo': '🏛️',
-  'Recreación':     '⚽',
-};
+import Spinner from '../common/Spinner';
 
 export default function SearchPanel({ onClose, onLocationSelect }) {
   const [searchTerm, setSearchTerm] = useState('');
