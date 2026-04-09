@@ -72,19 +72,18 @@ export default function Header({ session, minimal = false }) {
                 </div>
 
                 {/* Mobile Menu Toggle */}
-                {!minimal && (
-                    <button
-                        className="md:hidden p-2 text-gray-600"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        {isMenuOpen ? <MdClose className="w-7 h-7" /> : <MdMenu className="w-7 h-7" />}
-                    </button>
-                )}
+                <button
+                    className="md:hidden p-2 text-gray-600 focus:outline-none"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    {isMenuOpen ? <MdClose className="w-7 h-7" /> : <MdMenu className="w-7 h-7" />}
+                </button>
             </nav>
 
             {/* --- MOBILE MENU OVERLAY --- */}
             <AnimatePresence>
-                {isMenuOpen && !minimal && (
+                {isMenuOpen && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
@@ -92,7 +91,7 @@ export default function Header({ session, minimal = false }) {
                         className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
                     >
                         <div className="px-6 py-8 flex flex-col gap-6">
-                            {navLinks.map((link) => (
+                            {!minimal && navLinks.map((link) => (
                                 <a
                                     key={link.name}
                                     href={link.href}
@@ -102,7 +101,7 @@ export default function Header({ session, minimal = false }) {
                                     {link.name}
                                 </a>
                             ))}
-                            <hr className="border-gray-100" />
+                            {!minimal && <hr className="border-gray-100" />}
                             <div className="flex flex-col gap-4">
                                 
                                 {/* Renderizado Condicional: Mobile */}
