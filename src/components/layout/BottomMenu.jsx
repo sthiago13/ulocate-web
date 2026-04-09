@@ -109,6 +109,11 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
     setIsGestionarZonasOpen(false);
     setSelectedUbicacionId(null);
     setIsGlobalEditorOpen(false);
+
+    // Limpiar rutas o planificador activo en el mapa
+    if (campusMapRef?.current?.cancelRoute) {
+      campusMapRef.current.cancelRoute();
+    }
   };
 
   const isMapActive = !isAdminMode && !(

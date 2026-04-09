@@ -14,6 +14,7 @@ import NavigationPanel from './NavigationPanel';
 import ArrivalToast from './ArrivalToast';
 import GestionarNodos from '../admin/GestionarNodos';
 import NodeEditorPanel from '../admin/NodeEditorPanel';
+import RoutePlanner from './RoutePlanner';
 
 const geoData = JSON.parse(geoDataRaw);
 
@@ -88,6 +89,10 @@ const CampusMap = forwardRef(function CampusMap({
   const [distRemaining,    setDistRemaining]    = useState(0);
   const [arrived,          setArrived]          = useState(false);
   const [showArrivalToast, setShowArrivalToast] = useState(false);
+
+  // ─── Route Planner State ──────────────────────────────────────────────────
+  const [isRoutePlannerOpen, setIsRoutePlannerOpen] = useState(false);
+  const [plannerDestination, setPlannerDestination] = useState(null);
 
   // GPS
   const [userPosition, setUserPosition] = useState(null);
@@ -185,9 +190,15 @@ const CampusMap = forwardRef(function CampusMap({
     return () => watchId && navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // ─── Trazar ruta (llamado desde BottomMenu via prop) ─────────────────────────
-  // Este método se expone como ref para que BottomMenu lo llame
+  // ─── Trazar ruta (llamado desde BottomMenu o TarjetaUbicacion) ──────────────
+  // Ahora abre el planificador en lugar de iniciar inmediatamente
   const startRoute = useCallback((ubiTarget) => {
+    setPlannerDestination(ubiTarget);
+    setIsRoutePlannerOpen(true);
+  }, []);
+
+  // Ejecución real de la ruta desde el planificador
+  const executeRoute = useCallback((origin, destination) => {
     const ns = stateRef.current.nodes;
     const es = stateRef.current.edges;
 
@@ -196,22 +207,22 @@ const CampusMap = forwardRef(function CampusMap({
       return;
     }
 
-    // Nodo destino = ID_Nodo de la ubicación
-    const endNodeId = ubiTarget?.ID_Nodo || ubiTarget?.nodeId || null;
-    if (!endNodeId) {
-      alert('No se puede trazar ruta: esta ubicación no tiene nodo asignado.');
-      return;
-    }
+    let startNodeId = null;
+    let currentPos = userPositionRef.current;
 
-    // Nodo origen: más cercano al usuario o el primero
-    const currentPos = userPositionRef.current;
-    let startNodeId = ns.length > 0 ? ns[0].id : null;
-    if (currentPos) {
+    if (origin.type === 'gps') {
+      if (!currentPos) {
+        alert('No se detecta tu ubicación GPS.');
+        return;
+      }
       startNodeId = closestNode(ns, currentPos[0], currentPos[1]);
+    } else {
+      startNodeId = origin.nodeId;
     }
 
-    if (!startNodeId) {
-      alert('No se pudo determinar el punto de inicio.');
+    const endNodeId = destination?.ID_Nodo || destination?.nodeId;
+    if (!startNodeId || !endNodeId) {
+      alert('No se pudo determinar el inicio o el fin de la ruta.');
       return;
     }
 
@@ -224,43 +235,50 @@ const CampusMap = forwardRef(function CampusMap({
       } else if (startNodeId === endNodeId) {
         pathNodes = [ns.find(n => n.id === endNodeId)].filter(Boolean);
       } else {
-        alert('No hay un camino conectado. El administrador debe unir los nodos para crear una ruta.');
+        alert('No hay un camino conectado entre estos puntos.');
         return;
       }
 
       const routeNodes = [...pathNodes];
-      if (currentPos) {
+      // Si el origen fue GPS, añadimos el punto exacto del usuario al inicio
+      if (origin.type === 'gps' && currentPos) {
         routeNodes.unshift({ id: 'user', lat: currentPos[0], lng: currentPos[1] });
       }
 
       let totalDist = 0;
-      if (currentPos) {
+      if (origin.type === 'gps' && currentPos) {
         totalDist += getDistance(currentPos[0], currentPos[1], routeNodes[1]?.lat || 0, routeNodes[1]?.lng || 0);
-      }
-      for (let i = currentPos ? 2 : 1; i < routeNodes.length; i++) {
-        totalDist += getDistance(routeNodes[i - 1].lat, routeNodes[i - 1].lng, routeNodes[i].lat, routeNodes[i].lng);
+        for (let i = 2; i < routeNodes.length; i++) {
+          totalDist += getDistance(routeNodes[i - 1].lat, routeNodes[i - 1].lng, routeNodes[i].lat, routeNodes[i].lng);
+        }
+      } else {
+        for (let i = 1; i < routeNodes.length; i++) {
+          totalDist += getDistance(routeNodes[i - 1].lat, routeNodes[i - 1].lng, routeNodes[i].lat, routeNodes[i].lng);
+        }
       }
 
       const destNode = routeNodes[routeNodes.length - 1];
-      const initialRemaining = currentPos
+      const initialRemaining = (origin.type === 'gps' && currentPos)
         ? getDistance(currentPos[0], currentPos[1], destNode.lat, destNode.lng)
         : totalDist;
 
       setActiveRoute(routeNodes);
-      setRouteDestination(ubiTarget);
+      setRouteDestination(destination);
       setTotalDistance(totalDist || distance);
       setDistRemaining(initialRemaining);
       setArrived(false);
       setShowArrivalToast(false);
+      setIsRoutePlannerOpen(false); // Cerramos el planificador
     } catch (err) {
       console.error('Error en pathfinding:', err);
-      alert('Error calculando la ruta. Intenta de nuevo.');
+      alert('Error calculando la ruta.');
     }
   }, []);
 
   // Exponer métodos hacia el padre via forwardRef
   useImperativeHandle(ref, () => ({
     startRoute,
+    cancelRoute,
     centerOnUbicacion: (id) => {
       // Usamos un pequeño delay para que cualquier cierre de panel o re-render
       // no interrumpa la animación de Leaflet
@@ -274,14 +292,15 @@ const CampusMap = forwardRef(function CampusMap({
     }
   }), [startRoute]);
 
-  const cancelRoute = () => {
+  const cancelRoute = useCallback(() => {
     setActiveRoute([]);
     setRouteDestination(null);
     setTotalDistance(0);
     setDistRemaining(0);
     setArrived(false);
     setShowArrivalToast(false);
-  };
+    setIsRoutePlannerOpen(false); // También cerramos el planificador
+  }, []);
 
   // ─── ESC: cancelar modo conexión o deseleccionar nodo ────────────────────────────
   useEffect(() => {
@@ -451,6 +470,17 @@ const CampusMap = forwardRef(function CampusMap({
             <ArrivalToast
               destination={routeDestination}
               onDismiss={() => { setShowArrivalToast(false); cancelRoute(); }}
+            />
+          )}
+
+          {/* Planificador de Ruta (Origen y Destino) */}
+          {isRoutePlannerOpen && (
+            <RoutePlanner
+              onClose={() => setIsRoutePlannerOpen(false)}
+              onExecute={executeRoute}
+              initialDestination={plannerDestination}
+              ubicaciones={ubicaciones}
+              userPosition={userPosition}
             />
           )}
 
@@ -642,6 +672,7 @@ const CampusMap = forwardRef(function CampusMap({
               icon={icon}
               eventHandlers={{
                 click: () => {
+                  cancelRoute(); // Cerramos cualquier ruta o planificador previo
                   mapInstanceRef.current?.flyTo([node.lat, node.lng], 19, { duration: 0.8 });
                   onUbicacionSelect?.(ubi.id);
                 }
