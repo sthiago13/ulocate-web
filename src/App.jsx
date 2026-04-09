@@ -7,6 +7,7 @@ import PanelLogin from './pages/PanelLogin'
 import PanelRegistro from './pages/PanelRegistro'
 import PanelRecuperar from './pages/PanelRecuperar'
 import Home from './pages/Home'
+import ExplorePage from './pages/ExplorePage'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -14,9 +15,12 @@ function App() {
   const [authError, setAuthError] = useState(null)
 
   useEffect(() => {
+    let isInitialLoad = true;
+
     const verifyAndSetSession = async (currentSession) => {
       if (currentSession) {
-        const { data: usuarioDB } = await supabase
+        // Verificamos si el usuario está activo en la base de datos
+        const { data: usuarioDB, error } = await supabase
           .from('Usuario')
           .select('Activo')
           .eq('ID_Usuario', currentSession.user.id)
@@ -30,65 +34,68 @@ function App() {
           return;
         }
       }
+      
+      // Actualizamos la sesión solo si es distinta para evitar re-renders innecesarios
       setSession(currentSession);
-      setIsCheckingAuth(false);
+      
+      // Solo desactivamos isCheckingAuth después de la primera verificación exitosa
+      if (isInitialLoad) {
+        setIsCheckingAuth(false);
+        isInitialLoad = false;
+      }
     };
 
     // 1. Revisar la sesión actual al cargar
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      verifyAndSetSession(session);
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      verifyAndSetSession(initialSession);
     });
 
-    // 2. Escuchar cambios (cuando el usuario hace login o logout)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === 'SIGNED_IN') {
-        setIsCheckingAuth(true); // volvemos a mostrar la pantalla de carga de ser necesario
-        verifyAndSetSession(session);
-      } else if (_event === 'SIGNED_OUT') {
+    // 2. Escuchar cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        verifyAndSetSession(currentSession);
+      } else if (event === 'SIGNED_OUT') {
         setSession(null);
+        setIsCheckingAuth(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Muestra una pantalla de carga básica mientras verifica la sesión
-  if (isCheckingAuth) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#f9f9f9]">
-        <p className="font-jakarta text-lg">Cargando U-Locate...</p>
-      </div>
-    )
-  }
-
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Routes>
-        {/* Rutas Públicas */}
-        <Route path="/" element={<LandingPage session={session} />} />
-        
-        {/* Rutas para invitados (Si ya tiene sesión, lo mandamos directo al Home) */}
-        <Route 
-          path="/login" 
-          element={!session ? <PanelLogin /> : <Navigate to="/home" replace />} 
-        />
-        <Route 
-          path="/registro" 
-          element={!session ? <PanelRegistro /> : <Navigate to="/home" replace />} 
-        />
-        <Route 
-          path="/recuperar" 
-          element={!session ? <PanelRecuperar /> : <Navigate to="/home" replace />} 
-        />
+      {isCheckingAuth ? (
+        <div className="flex items-center justify-center min-h-screen bg-[#f9f9f9]">
+          <p className="font-jakarta text-lg">Cargando U-Locate...</p>
+        </div>
+      ) : (
+        <Routes>
+          {/* Rutas Públicas */}
+          <Route path="/" element={<LandingPage session={session} />} />
+          <Route path="/explorar" element={<ExplorePage session={session} />} />
+          
+          {/* Rutas para invitados */}
+          <Route 
+            path="/login" 
+            element={!session ? <PanelLogin /> : <Navigate to="/home" replace />} 
+          />
+          <Route 
+            path="/registro" 
+            element={!session ? <PanelRegistro /> : <Navigate to="/home" replace />} 
+          />
+          <Route 
+            path="/recuperar" 
+            element={!session ? <PanelRecuperar /> : <Navigate to="/home" replace />} 
+          />
 
-        {/* Rutas Protegidas (Si NO tiene sesión, lo regresamos al Login) */}
-        <Route 
-          path="/home" 
-          element={session ? <Home /> : <Navigate to="/login" replace />} 
-        />
-      </Routes>
+          {/* Rutas Protegidas */}
+          <Route 
+            path="/home" 
+            element={session ? <Home /> : <Navigate to="/login" replace />} 
+          />
+        </Routes>
+      )}
 
       {/* Auth Error Modal */}
       {authError && (

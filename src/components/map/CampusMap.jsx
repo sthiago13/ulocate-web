@@ -56,6 +56,8 @@ const CampusMap = forwardRef(function CampusMap({
   onExitAdminMode,
   onUbicacionSelect,
   onOpenGestionarLugares,
+  initialZoom = 17,
+  hideMarkers = false,
 }, ref) {
   const campusCenter = [7.794, -72.198];
   const campusBounds = [[7.785, -72.210], [7.805, -72.185]];
@@ -501,7 +503,7 @@ const CampusMap = forwardRef(function CampusMap({
       {/* ── Botones de Zoom ─────────────────────────────────────────────────── */}
       {createPortal(
         <div
-          style={{ zIndex: 9998 }}
+          style={{ zIndex: 59 }}
           className="fixed
             top-24 right-3
             md:top-auto md:bottom-28 md:right-4
@@ -527,7 +529,7 @@ const CampusMap = forwardRef(function CampusMap({
 
       <MapContainer
         center={campusCenter}
-        zoom={17}
+        zoom={initialZoom}
         minZoom={14}
         maxZoom={20}
         maxBounds={campusBounds}
@@ -654,7 +656,7 @@ const CampusMap = forwardRef(function CampusMap({
         })}
 
         {/* Pins de Ubicaciones (solo en modo usuario, no en admin) */}
-        {!isRouteAdminMode && ubicaciones.map(ubi => {
+        {!isRouteAdminMode && !hideMarkers && ubicaciones.map(ubi => {
           const node = nodes.find(n => n.id === ubi.nodeId);
           if (!node) return null;
           const IconComp = MdIcons[ubi.icono] || MdIcons.MdPlace;

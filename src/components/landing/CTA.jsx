@@ -1,4 +1,5 @@
 import { motion } from "framer-motion"
+import { Link } from "react-router-dom"
 
 export default function CTA() {
     return (
@@ -21,12 +22,12 @@ export default function CTA() {
                         Comienza a usar U-Locate hoy mismo y descubre una nueva forma de vivir tu universidad.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="w-full sm:w-auto px-10 py-4 bg-white text-blue-600 font-black rounded-full hover:bg-gray-100 transition-all duration-300 shadow-xl hover:-translate-y-1">
+                        <Link 
+                            to="/registro"
+                            className="w-full sm:w-auto px-10 py-4 bg-white text-blue-600 font-black rounded-full hover:bg-gray-100 transition-all duration-300 shadow-xl hover:-translate-y-1 block text-center"
+                        >
                             Empezar ahora
-                        </button>
-                        <button className="w-full sm:w-auto px-10 py-4 bg-transparent border-2 border-white/30 text-white font-bold rounded-full hover:bg-white/10 transition-all duration-300">
-                            Ver tutorial
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </motion.div>

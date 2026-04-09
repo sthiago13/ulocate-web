@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { MdMenu, MdClose } from "react-icons/md"
 
 // 1. Recibimos la session como prop
-export default function Header({ session }) {
+export default function Header({ session, minimal = false }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
 
@@ -25,16 +25,16 @@ export default function Header({ session }) {
     return (
         <header className={`sticky top-0 z-50 transition-all duration-300 ${(scrolled || isMenuOpen) ? "bg-white backdrop-blur-xl shadow-lg py-3" : "bg-transparent py-5"}`}>
             <nav className="max-w-7xl mx-auto px-6 md:px-10 flex justify-between items-center">
-                <div className="flex items-center gap-2 cursor-pointer group">
+                <Link to="/" className="flex items-center gap-2 cursor-pointer group">
                     <img className="w-10 md:w-10 transition-transform duration-300 group-hover:scale-110" src={`${import.meta.env.BASE_URL}logo_ulocate_plano.svg`} alt="Logo ULocate" />
                     <h3 className="font-bold text-xl md:text-2xl tracking-tight text-gray-800">
                         <span className="text-blue-600">U</span>-Locate GPS
                     </h3>
-                </div>
+                </Link>
 
                 {/* --- DESKTOP NAV --- */}
                 <div className="hidden md:flex gap-8 items-center">
-                    {navLinks.map((link) => (
+                    {!minimal && navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
@@ -43,7 +43,7 @@ export default function Header({ session }) {
                             {link.name}
                         </a>
                     ))}
-                    <div className="h-6 w-px bg-gray-200 mx-2" />
+                    {!minimal && <div className="h-6 w-px bg-gray-200 mx-2" />}
                     
                     {/* Renderizado Condicional: Desktop */}
                     {session ? (
@@ -73,8 +73,9 @@ export default function Header({ session }) {
 
                 {/* Mobile Menu Toggle */}
                 <button
-                    className="md:hidden p-2 text-gray-600"
+                    className="md:hidden p-2 text-gray-600 focus:outline-none"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle menu"
                 >
                     {isMenuOpen ? <MdClose className="w-7 h-7" /> : <MdMenu className="w-7 h-7" />}
                 </button>
@@ -90,7 +91,7 @@ export default function Header({ session }) {
                         className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
                     >
                         <div className="px-6 py-8 flex flex-col gap-6">
-                            {navLinks.map((link) => (
+                            {!minimal && navLinks.map((link) => (
                                 <a
                                     key={link.name}
                                     href={link.href}
@@ -100,7 +101,7 @@ export default function Header({ session }) {
                                     {link.name}
                                 </a>
                             ))}
-                            <hr className="border-gray-100" />
+                            {!minimal && <hr className="border-gray-100" />}
                             <div className="flex flex-col gap-4">
                                 
                                 {/* Renderizado Condicional: Mobile */}
