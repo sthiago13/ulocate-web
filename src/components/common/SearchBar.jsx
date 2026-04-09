@@ -16,6 +16,7 @@ export default function SearchBar({
           onClick={onFilterClick}
           className="p-2 text-gray-500 border-r border-gray-300 mr-2 cursor-pointer hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center"
           title="Opciones de filtrado"
+          aria-label="Configuración de filtros"
         >
           <MdTune className="w-5 h-5" />
         </button>
@@ -27,11 +28,13 @@ export default function SearchBar({
         className={`flex-1 bg-transparent border-none outline-none font-sans text-[15px] sm:text-[16px] text-[#101828] placeholder-gray-500 w-full min-w-0 ${!showFilter ? 'ml-3' : ''}`}
         value={value}
         onChange={onChange}
+        aria-label={placeholder}
       />
       
       <button 
         className="p-3 bg-blue-600 rounded-full text-white cursor-pointer hover:bg-blue-700 shadow-sm transition-colors ml-2"
         title="Buscar"
+        aria-label="Iniciar búsqueda"
       >
         <MdSearch className="w-5 h-5" />
       </button>

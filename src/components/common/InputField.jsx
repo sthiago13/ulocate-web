@@ -28,6 +28,7 @@ export default function InputField({
             placeholder={placeholder}
             className="font-jakarta font-normal text-[14px] text-black w-full outline-none bg-transparent placeholder-[#a3a3a3] resize-none"
             rows={3}
+            aria-label={props['aria-label'] || label || placeholder}
             {...props}
           />
         ) : (
@@ -37,6 +38,7 @@ export default function InputField({
               type={effectiveType}
               placeholder={placeholder}
               className="font-jakarta font-normal text-[14px] text-black w-full outline-none bg-transparent placeholder-[#a3a3a3]"
+              aria-label={props['aria-label'] || label || placeholder}
               {...props}
             />
             {isPassword && (
@@ -44,6 +46,7 @@ export default function InputField({
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="ml-2 text-gray-500 hover:text-black focus:outline-none flex-shrink-0"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showPassword ? <MdVisibility size={20} /> : <MdVisibilityOff size={20} />}
               </button>

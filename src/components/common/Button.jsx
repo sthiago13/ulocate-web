@@ -18,6 +18,7 @@ export default function Button({
     <button
       onClick={onClick}
       className={`${baseClasses} ${variants[variant]} ${className}`}
+      aria-label={props['aria-label'] || (typeof children === 'string' ? children : undefined)}
       {...props}
     >
       {children}

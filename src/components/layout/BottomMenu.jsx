@@ -132,6 +132,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
         <button
           onClick={() => setIsMenuOpen(true)}
           className={`p-2.5 rounded-full transition-colors group ${isMenuOpen ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
+          aria-label="Abrir menú de usuario"
         >
           <MdMenu className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
@@ -141,6 +142,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
           onClick={isAdminMode ? () => { closeAllPanels(); onExitAdminMode?.(); } : closeAllPanels}
           className={`p-2.5 rounded-full transition-colors group ${isMapActive ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
           title={isAdminMode ? 'Salir del modo edición' : 'Ir al mapa base'}
+          aria-label={isAdminMode ? 'Salir del modo edición y volver al mapa' : 'Centrar mapa y cerrar paneles'}
         >
           <MdMap className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
@@ -149,6 +151,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
         <button
           onClick={() => setIsSearchOpen(true)}
           className={`p-2.5 rounded-full transition-colors group ${isSearchOpen ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
+          aria-label="Buscar ubicaciones"
         >
           <MdSearch className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>

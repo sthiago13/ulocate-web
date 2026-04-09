@@ -180,11 +180,14 @@ export default function NodeEditorPanel({
                   />
                   <ActionBtn
                     icon={MdEdit}
-                    label={ubicacion ? 'Editar' : 'Asignar'}
-                    color="text-[#155dfc]"
-                    bg="bg-blue-50 hover:bg-blue-100"
-                    onClick={() => setView('assign_place')}
-                    title={ubicacion ? 'Editar el lugar de este nodo' : 'Asignar lugar a este nodo'}
+                    label={ubicacion ? 'Asignado' : 'Asignar'}
+                    color={ubicacion ? "text-gray-400" : "text-[#155dfc]"}
+                    bg={ubicacion ? "bg-gray-50" : "bg-blue-50 hover:bg-blue-100"}
+                    onClick={() => {
+                      if (!ubicacion) setView('assign_place');
+                    }}
+                    disabled={!!ubicacion}
+                    title={ubicacion ? 'Este nodo ya tiene un lugar. No se puede reasignar desde aquí.' : 'Asignar o crear un lugar para este nodo'}
                   />
                   {ubicacion ? (
                     <ActionBtn
@@ -316,7 +319,7 @@ export default function NodeEditorPanel({
       <EditorLugar
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
-        lugarToEdit={{ ID_Nodo: node?.id }}
+        lugarToEdit={ubicacion ? (ubicacion.supaObj || ubicacion) : { ID_Nodo: node?.id }}
         onSuccess={() => {
           setIsEditorOpen(false);
           onReloadMap?.();
