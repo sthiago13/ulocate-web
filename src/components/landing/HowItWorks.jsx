@@ -71,10 +71,19 @@ export default function HowItWorks() {
                         className="flex-1 relative w-full max-w-md lg:max-w-none mx-auto"
                     >
                         <div className="aspect-4/5 rounded-4xl bg-linear-to-tr from-blue-600 to-blue-400 p-1 shadow-2xl overflow-hidden">
-                            <div className="w-full h-full bg-white rounded-3xl overflow-hidden relative">
-                                {/* Placeholder for a mockup or image */}
-                                <div className="absolute inset-0 bg-gray-50 flex items-center justify-center p-10">
-                                    <div className="w-full h-full border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center">
+                            <div className="w-full h-full bg-white rounded-4xl overflow-hidden relative">
+                                {}
+                                <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
+                                    <img 
+                                        src={`${import.meta.env.BASE_URL}vistas-plataforma.png`} 
+                                        alt="Interfaz de la plataforma U-Locate"
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <div className="hidden w-full h-full border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-10">
                                         <MdSmartphone className="w-12 h-12 md:w-16 md:h-16 text-blue-200 mb-4" />
                                         <span className="text-gray-400 font-bold text-sm md:text-base font-montserrat tracking-tight">Interfaz de Navegación</span>
                                     </div>

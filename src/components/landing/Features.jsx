@@ -53,9 +53,12 @@ export default function Features() {
                             transition={{ delay: index * 0.1 }}
                             className="p-8 rounded-3xl bg-white border border-gray-100 shadow-xl shadow-gray-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 group"
                         >
-                            <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <motion.div 
+                                whileHover={{ scale: 1.1 }}
+                                className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 transition-colors duration-300"
+                            >
                                 {feature.icon}
-                            </div>
+                            </motion.div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
                             <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                         </motion.div>

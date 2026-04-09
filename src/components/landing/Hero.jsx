@@ -1,8 +1,11 @@
 import Earth3D from "./Earth3D";
 import { motion } from "framer-motion"
 import { MdArrowForward } from "react-icons/md"
+import { useNavigate } from "react-router-dom"
 
 export default function Hero() {
+    const navigate = useNavigate();
+
     return (
         <>
             <section className="relative px-6 md:px-10 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
@@ -31,9 +34,12 @@ export default function Hero() {
                             transition={{ duration: 0.8, delay: 0.4 }}
                             className="w-full md:w-auto"
                         >
-                            <button className="group relative w-full md:w-auto px-10 py-4 rounded-full bg-gray-900 text-white font-bold overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 cursor-pointer">
+                            <button 
+                                onClick={() => navigate('/explorar')}
+                                className="group relative w-full md:w-auto px-10 py-4 rounded-full bg-gray-900 text-white font-bold overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 cursor-pointer"
+                            >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
-                                    Explorar Campus
+                                    ¡Comienza a explorar!
                                     <MdArrowForward className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </span>
                                 <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -47,4 +53,4 @@ export default function Hero() {
             </section >
         </>
     )
-}
+}
