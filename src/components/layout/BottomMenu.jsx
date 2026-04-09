@@ -21,7 +21,7 @@ import { supabase } from '../../lib/supabaseClient';
  * Este patrón evita el uso de localStorage/window events para comunicar
  * TarjetaUbicacion → CampusMap.
  */
-const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminRoutes, campusMapRef }, ref) {
+const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminRoutes, campusMapRef, isAdminMode = false, onExitAdminMode }, ref) {
   const [isMenuOpen,              setIsMenuOpen]              = useState(false);
   const [isSearchOpen,            setIsSearchOpen]            = useState(false);
   const [isProfileOpen,           setIsProfileOpen]           = useState(false);
@@ -38,6 +38,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
   const [selectedUbicacionId,     setSelectedUbicacionId]     = useState(null);
   const [isGlobalEditorOpen,      setIsGlobalEditorOpen]      = useState(false);
   const [globalLugarToEdit,       setGlobalLugarToEdit]       = useState(null);
+  const [gestionarLugaresSearch,  setGestionarLugaresSearch]  = useState('');
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -62,10 +63,16 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
     setIsFavoritesOpen(false);
     // Forzar re-renderización limpia si ya había otra tarjeta abierta
     setSelectedUbicacionId(null);
+
+    // Centrar mapa en la ubicación
+    if (campusMapRef?.current?.centerOnUbicacion) {
+      campusMapRef.current.centerOnUbicacion(id);
+    }
+
     setTimeout(() => {
       setSelectedUbicacionId(id);
     }, 10);
-  }, []);
+  }, [campusMapRef]);
 
   /**
    * Callback para que TarjetaUbicacion solicite trazar ruta.
@@ -77,8 +84,15 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
     }
   }, [campusMapRef]);
 
-  // Exponer handleLocationSelect al padre (Home) para que CampusMap abra tarjetas via pin click
-  useImperativeHandle(ref, () => ({ handleLocationSelect }), [handleLocationSelect]);
+  // Exponer métodos al padre (Home):
+  // - handleLocationSelect: para abrir TarjetaUbicacion desde pins del mapa
+  // - openGestionarLugares: para abrir Gestionar Lugares pre-filtrado desde NodeEditorPanel
+  const openGestionarLugares = useCallback((searchTerm = '') => {
+    setGestionarLugaresSearch(searchTerm);
+    setIsGestionarLugaresOpen(true);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ handleLocationSelect, openGestionarLugares }), [handleLocationSelect, openGestionarLugares]);
 
   const closeAllPanels = () => {
     setIsMenuOpen(false);
@@ -97,7 +111,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
     setIsGlobalEditorOpen(false);
   };
 
-  const isMapActive = !(
+  const isMapActive = !isAdminMode && !(
     isMenuOpen || isFavoritesOpen || isProfileOpen || isHistoryOpen ||
     isNotificationsOpen || isAdminOpen || isSearchOpen ||
     isGestionarLugaresOpen || isGestionarUsuariosOpen ||
@@ -119,9 +133,9 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
 
         {/* Map Icon */}
         <button
-          onClick={closeAllPanels}
+          onClick={isAdminMode ? () => { closeAllPanels(); onExitAdminMode?.(); } : closeAllPanels}
           className={`p-2.5 rounded-full transition-colors group ${isMapActive ? 'bg-blue-50 text-[#155dfc]' : 'text-black hover:bg-gray-100'}`}
-          title="Ir al mapa base"
+          title={isAdminMode ? 'Salir del modo edición' : 'Ir al mapa base'}
         >
           <MdMap className="w-7 h-7 group-hover:scale-110 transition-transform" />
         </button>
@@ -185,8 +199,9 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
       {/* GestionarLugares controla su propio hijo EditorLugar internamente */}
       <GestionarLugares
         isOpen={isGestionarLugaresOpen}
-        onClose={() => setIsGestionarLugaresOpen(false)}
+        onClose={() => { setIsGestionarLugaresOpen(false); setGestionarLugaresSearch(''); }}
         onLocationSelect={handleLocationSelect}
+        initialSearchTerm={gestionarLugaresSearch}
       />
 
       <GestionarUsuarios

@@ -25,9 +25,13 @@ export default function Home() {
           isRouteAdminMode={isRouteAdminMode}
           onExitAdminMode={() => setIsRouteAdminMode(false)}
           onUbicacionSelect={(id) => {
-            // Delegar al BottomMenu para abrir TarjetaUbicacion
             if (selectLocationRef.current?.handleLocationSelect) {
               selectLocationRef.current.handleLocationSelect(id);
+            }
+          }}
+          onOpenGestionarLugares={(term) => {
+            if (selectLocationRef.current?.openGestionarLugares) {
+              selectLocationRef.current.openGestionarLugares(term);
             }
           }}
         />
@@ -38,6 +42,8 @@ export default function Home() {
         ref={selectLocationRef}
         onOpenAdminRoutes={() => setIsRouteAdminMode(true)}
         campusMapRef={campusMapRef}
+        isAdminMode={isRouteAdminMode}
+        onExitAdminMode={() => setIsRouteAdminMode(false)}
       />
 
     </div>

@@ -12,9 +12,8 @@ import * as MdIcons from 'react-icons/md';
 import { supabase } from '../../lib/supabaseClient';
 import NavigationPanel from './NavigationPanel';
 import ArrivalToast from './ArrivalToast';
-import EditorLugar from '../admin/EditorLugar';
 import GestionarNodos from '../admin/GestionarNodos';
-import ModalConfirmacion from '../common/ModalConfirmacion';
+import NodeEditorPanel from '../admin/NodeEditorPanel';
 
 const geoData = JSON.parse(geoDataRaw);
 
@@ -32,9 +31,14 @@ const locationIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
 
-// ── MapClickInterceptor ───────────────────────────────────────────────────────
-function MapClickInterceptor({ isAdminMode, onMapClick }) {
-  useMapEvents({ click(e) { if (isAdminMode) onMapClick(e.latlng); } });
+// ── MapClickInterceptor ────────────────────────────────────────────────
+function MapClickInterceptor({ isAddingNodes, isConnecting, onMapClick, onCancelConnect }) {
+  useMapEvents({
+    click(e) {
+      if (isAddingNodes) onMapClick(e.latlng);
+      else if (isConnecting) onCancelConnect();
+    }
+  });
   return null;
 }
 
@@ -50,6 +54,7 @@ const CampusMap = forwardRef(function CampusMap({
   isRouteAdminMode,
   onExitAdminMode,
   onUbicacionSelect,
+  onOpenGestionarLugares,
 }, ref) {
   const campusCenter = [7.794, -72.198];
   const campusBounds = [[7.785, -72.210], [7.805, -72.185]];
@@ -58,21 +63,23 @@ const CampusMap = forwardRef(function CampusMap({
   const [nodes,       setNodes]       = useState([]);
   const [edges,       setEdges]       = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
+  // Estado editor (nodo seleccionado muestra NodeEditorPanel)
   const [selectedId,  setSelectedId]  = useState(null);
-
-  // Estado para el editor de lugar (doble clic en nodo)
-  const [editorNodoId,  setEditorNodoId]  = useState(null);  // ID_Nodo de Supabase
-  const [editorLocData, setEditorLocData] = useState(null);  // objeto existente o null
-  const [isEditorOpen,  setIsEditorOpen]  = useState(false);
-
-  // Estado para modal de confirmación (eliminar nodo)
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, nodeId: null });
 
   // ─── Ref para la instancia del mapa (zoom buttons + flyTo) ────────────────────
   const mapInstanceRef = useRef(null);
 
-  // ─── Admin panel state ──────────────────────────────────────────────────────
-  const [canAddNodes, setCanAddNodes] = useState(false);
+  // ─── Admin panel state ─────────────────────────────────────────────────────
+  const [canAddNodes,    setCanAddNodes]    = useState(false);
+  const [connectingFrom, setConnectingFrom] = useState(null); // nodeId desde el que se conecta
+  const [selectedEdge,   setSelectedEdge]   = useState(null); // tramo seleccionado para eliminar
+
+  // Ref directo para connectingFrom (evita dependencia de render cycle en handleNodeClick)
+  const connectingFromRef = useRef(null);
+  const updateConnectingFrom = useCallback((val) => {
+    connectingFromRef.current = val;
+    setConnectingFrom(val);
+  }, []);
 
   // Navegación
   const [activeRoute,      setActiveRoute]      = useState([]);
@@ -94,7 +101,9 @@ const CampusMap = forwardRef(function CampusMap({
   }, [activeRoute, routeDestination, totalDistance]);
 
   const stateRef = useRef({});
-  useEffect(() => { stateRef.current = { nodes, edges, selectedId }; }, [nodes, edges, selectedId]);
+  useEffect(() => {
+    stateRef.current = { nodes, edges, selectedId, connectingFrom, ubicaciones };
+  }, [nodes, edges, selectedId, connectingFrom, ubicaciones]);
 
   // ─── Carga inicial desde Supabase ────────────────────────────────────────────
   const loadFromSupabase = useCallback(async () => {
@@ -249,8 +258,21 @@ const CampusMap = forwardRef(function CampusMap({
     }
   }, []);
 
-  // Exponer startRoute hacia el padre (BottomMenu) via forwardRef
-  useImperativeHandle(ref, () => ({ startRoute }), [startRoute]);
+  // Exponer métodos hacia el padre via forwardRef
+  useImperativeHandle(ref, () => ({
+    startRoute,
+    centerOnUbicacion: (id) => {
+      // Usamos un pequeño delay para que cualquier cierre de panel o re-render
+      // no interrumpa la animación de Leaflet
+      setTimeout(() => {
+        const ubi = stateRef.current.ubicaciones?.find(u => u.id == id);
+        if (!ubi) return;
+        const node = stateRef.current.nodes?.find(n => n.id == ubi.nodeId);
+        if (!node) return;
+        mapInstanceRef.current?.flyTo([node.lat, node.lng], 19, { duration: 0.8 });
+      }, 50);
+    }
+  }), [startRoute]);
 
   const cancelRoute = () => {
     setActiveRoute([]);
@@ -261,12 +283,32 @@ const CampusMap = forwardRef(function CampusMap({
     setShowArrivalToast(false);
   };
 
-  // ─── Admin: clic en mapa (añadir nodo) ───────────────────────────────────────
+  // ─── ESC: cancelar modo conexión o deseleccionar nodo ────────────────────────────
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') { updateConnectingFrom(null); setSelectedId(null); setSelectedEdge(null); } };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [updateConnectingFrom]);
+
+  // ─── Admin: clic en mapa (añadir nodo) ──────────────────────────────────────────
+  const lastNodeTimeRef = useRef(0);
+  const MIN_NODE_DIST_M = 3; // metros mínimos entre nodos
+
   const handleMapClick = async (latlng) => {
-    if (!canAddNodes) {
-      setSelectedId(null);
-      return;
-    }
+    if (!canAddNodes) { setSelectedId(null); return; }
+
+    // Cooldown: máx 1 nodo por segundo (evita doble-clic que crea duplicados)
+    const now = Date.now();
+    if (now - lastNodeTimeRef.current < 1000) return;
+
+    // Evitar nodos demasiado próximos entre sí
+    const tooClose = stateRef.current.nodes.some(
+      n => getDistance(n.lat, n.lng, latlng.lat, latlng.lng) < MIN_NODE_DIST_M
+    );
+    if (tooClose) return;
+
+    lastNodeTimeRef.current = now;
+
     try {
       const { data: newNode, error } = await supabase
         .from('Nodo')
@@ -286,99 +328,52 @@ const CampusMap = forwardRef(function CampusMap({
     setSelectedId(null);
   };
 
-  // ─── Admin: clic en nodo (seleccionar / conectar) ────────────────────────────
+  // ─── Admin: clic en nodo (seleccionar / modo conectar) ───────────────────────────
   const handleNodeClick = async (node, e) => {
     if (!isRouteAdminMode) return;
-    if (e.originalEvent) {
-      e.originalEvent.stopPropagation();
-      e.originalEvent.preventDefault();
-    }
+    e.originalEvent?.stopPropagation();
+    e.originalEvent?.preventDefault();
 
-    const { selectedId: curr, nodes: currNodes, edges: currEdges } = stateRef.current;
+    const connFrom = connectingFromRef.current; // siempre actual, sin ciclo de render
 
-    if (!curr) {
-      setSelectedId(node.id);
-      return;
-    }
+    if (connFrom) {
+      // Clic en el mismo nodo origen = cancelar
+      if (connFrom === node.id) { updateConnectingFrom(null); return; }
 
-    if (curr === node.id) {
-      setSelectedId(null);
-      return;
-    }
-
-    // Conectar dos nodos
-    const src = currNodes.find(n => n.id === curr);
-    if (src) {
-      // Verificar si ya existe el tramo
-      const exists = currEdges.some(edge =>
-        (edge.source === curr && edge.target === node.id) ||
-        (edge.source === node.id && edge.target === curr)
-      );
-      if (!exists) {
-        const dist = getDistance(src.lat, src.lng, node.lat, node.lng);
-        try {
-          const { data: newTramo, error } = await supabase
-            .from('Tramo')
-            .insert({
-              ID_Nodo_Origen:   curr,
-              ID_Nodo_Destino:  node.id,
-              Distancia_Metros: dist,
-            })
-            .select('ID_Tramo')
-            .single();
-          if (error) throw error;
-          setEdges(prev => [...prev, {
-            id:       `${curr}__${node.id}`,
-            source:   curr,
-            target:   node.id,
-            distance: dist,
-            supaId:   newTramo.ID_Tramo,
-          }]);
-        } catch (err) {
-          console.error('Error creando tramo:', err);
+      // Crear tramo desde connFrom → este nodo
+      const { nodes: currNodes, edges: currEdges } = stateRef.current;
+      const src = currNodes.find(n => n.id === connFrom);
+      if (src) {
+        const exists = currEdges.some(edge =>
+          (edge.source === connFrom && edge.target === node.id) ||
+          (edge.source === node.id && edge.target === connFrom)
+        );
+        if (!exists) {
+          const dist = getDistance(src.lat, src.lng, node.lat, node.lng);
+          try {
+            const { data: newTramo, error } = await supabase
+              .from('Tramo')
+              .insert({ ID_Nodo_Origen: connFrom, ID_Nodo_Destino: node.id, Distancia_Metros: dist })
+              .select('ID_Tramo')
+              .single();
+            if (error) throw error;
+            setEdges(prev => [...prev, { id: `${connFrom}__${node.id}`, source: connFrom, target: node.id, distance: dist, supaId: newTramo.ID_Tramo }]);
+          } catch (err) { console.error('Error creando tramo:', err); }
         }
       }
+      updateConnectingFrom(null);
+      return;
     }
-    setSelectedId(null);
+
+    // Sin modo conexión: seleccionar/deseleccionar nodo (toggle)
+    setSelectedEdge(null);
+    setSelectedId(prev => prev === node.id ? null : node.id);
   };
 
-  // ─── Admin: doble clic en nodo (abrir EditorLugar) ───────────────────────────
-  const handleNodeDoubleClick = (node, e) => {
-    if (!isRouteAdminMode) return;
-    if (e.originalEvent) {
-      e.originalEvent.stopPropagation();
-      e.originalEvent.preventDefault();
-    }
-    setSelectedId(null);
-
-    // Buscar si el nodo ya tiene una Ubicacion asociada
-    const existingUbi = ubicaciones.find(u => u.nodeId === node.id);
-
-    // Preparar el objeto que EditorLugar espera en su prop `lugarToEdit`
-    if (existingUbi) {
-      // Editar: pasamos el objeto completo de Supabase con ID_Nodo prefilled
-      setEditorLocData({ ...existingUbi.supaObj, ID_Nodo: node.id });
-    } else {
-      // Crear: pasamos un objeto mínimo con ID_Nodo para que lo prellene
-      setEditorLocData({ ID_Nodo: node.id });
-    }
-
-    setEditorNodoId(node.id);
-    setIsEditorOpen(true);
-  };
-
-  // ─── Admin: eliminar nodo ────────────────────────────────────────────────────
+  // ─── Admin: eliminar nodo (solo si sin ubicacion) ──────────────────────────────
   const handleDeleteNode = async (nodeId) => {
     try {
-      const ubi = ubicaciones.find(u => u.nodeId === nodeId);
-      if (ubi) {
-        await supabase.from('Ubicacion_Guardada').delete().eq('ID_Ubicacion', ubi.id);
-        await supabase.from('Referencias_Visuales').delete().eq('ID_Ubicacion', ubi.id);
-        await supabase.from('Ubicacion').delete().eq('ID_Ubicacion', ubi.id);
-      }
-      await supabase.from('Tramo')
-        .delete()
-        .or(`ID_Nodo_Origen.eq.${nodeId},ID_Nodo_Destino.eq.${nodeId}`);
+      await supabase.from('Tramo').delete().or(`ID_Nodo_Origen.eq.${nodeId},ID_Nodo_Destino.eq.${nodeId}`);
       await supabase.from('Nodo').delete().eq('ID_Nodo', nodeId);
 
       setNodes(prev => prev.filter(n => n.id !== nodeId));
@@ -390,32 +385,21 @@ const CampusMap = forwardRef(function CampusMap({
     }
   };
 
-  // ─── Admin: limpiar todo ─────────────────────────────────────────────────────
-  const handleClearAll = async () => {
-    try {
-      // Eliminar cascada: Ubicaciones → Tramos → Nodos
-      for (const u of ubicaciones) {
-        await supabase.from('Ubicacion_Guardada').delete().eq('ID_Ubicacion', u.id);
-        await supabase.from('Referencias_Visuales').delete().eq('ID_Ubicacion', u.id);
-        await supabase.from('Ubicacion').delete().eq('ID_Ubicacion', u.id);
-      }
-      // Tramos
-      await supabase.from('Tramo').delete().neq('ID_Tramo', 0);
-      // Nodos
-      await supabase.from('Nodo').delete().neq('ID_Nodo', 0);
 
-      setNodes([]);
-      setEdges([]);
-      setUbicaciones([]);
-      setSelectedId(null);
-      cancelRoute();
+  // ─── Admin: eliminar tramo ───────────────────────────────────────────────────
+  const handleDeleteEdge = async (edge) => {
+    try {
+      await supabase.from('Tramo').delete().eq('ID_Tramo', edge.supaId);
+      setEdges(prev => prev.filter(e => e.id !== edge.id));
+      setSelectedEdge(null);
     } catch (err) {
-      console.error('Error limpiando mapa:', err);
+      console.error('Error eliminando tramo:', err);
     }
   };
 
   // ─── Utilidad: nodo a ubicacion ──────────────────────────────────────────────
   const getUbiByNodeId = (nodeId) => ubicaciones.find(u => u.nodeId === nodeId) || null;
+
 
   return (
     <div className="w-full h-full relative">
@@ -423,7 +407,7 @@ const CampusMap = forwardRef(function CampusMap({
       {/* Overlays via Portals */}
       {createPortal(
         <>
-          {/* Panel admin de nodos */}
+          {/* Panel admin global (toggle modo nodos + stats) */}
           {isRouteAdminMode && (
             <GestionarNodos
               isOpen={isRouteAdminMode}
@@ -432,21 +416,25 @@ const CampusMap = forwardRef(function CampusMap({
               setCanAddNodes={setCanAddNodes}
               nodeCount={nodes.length}
               edgeCount={edges.length}
-              onClearAll={handleClearAll}
             />
           )}
 
-          {/* Editor de lugar (al hacer doble clic en nodo) */}
-          <EditorLugar
-            isOpen={isEditorOpen}
-            onClose={() => { setIsEditorOpen(false); setEditorLocData(null); }}
-            lugarToEdit={editorLocData}
-            onSuccess={() => {
-              setIsEditorOpen(false);
-              setEditorLocData(null);
-              loadFromSupabase(); // Recargar datos del mapa
-            }}
-          />
+          {/* Panel de edición del nodo seleccionado */}
+          {isRouteAdminMode && selectedId && (
+            <NodeEditorPanel
+              node={nodes.find(n => n.id === selectedId) || null}
+              ubicacion={getUbiByNodeId(selectedId)}
+              isOpen={!!selectedId}
+              onClose={() => setSelectedId(null)}
+              onStartConnect={() => updateConnectingFrom(selectedId)}
+              onDeleteNode={handleDeleteNode}
+              onOpenGestionarLugares={(term) => {
+                setSelectedId(null);
+                onOpenGestionarLugares?.(term);
+              }}
+              onReloadMap={loadFromSupabase}
+            />
+          )}
 
           {/* Panel de navegación activa */}
           {activeRoute.length > 0 && !isRouteAdminMode && !arrived && (
@@ -464,6 +452,17 @@ const CampusMap = forwardRef(function CampusMap({
               destination={routeDestination}
               onDismiss={() => { setShowArrivalToast(false); cancelRoute(); }}
             />
+          )}
+
+          {/* Banner: modo conexión activo */}
+          {connectingFrom && (
+            <div
+              style={{ zIndex: 9997 }}
+              className="fixed top-24 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[12px] font-bold rounded-full px-5 py-2 shadow-lg flex items-center gap-2"
+            >
+              <span className="animate-pulse">●</span>
+              Haz clic en otro nodo para conectar · ESC para cancelar
+            </div>
           )}
         </>,
         document.body
@@ -562,60 +561,80 @@ const CampusMap = forwardRef(function CampusMap({
           const src = nodes.find(n => n.id === edge.source);
           const tgt = nodes.find(n => n.id === edge.target);
           if (!src || !tgt) return null;
+          const isSel = selectedEdge?.id === edge.id;
           return (
             <Polyline
               key={edge.id}
               positions={[[src.lat, src.lng], [tgt.lat, tgt.lng]]}
-              color={isRouteAdminMode ? '#6366f1' : '#94a3b8'}
-              weight={isRouteAdminMode ? 3 : 2}
-              dashArray={isRouteAdminMode ? '6 4' : ''}
+              color={isSel ? '#ef4444' : (isRouteAdminMode ? '#6366f1' : '#94a3b8')}
+              weight={isSel ? 5 : (isRouteAdminMode ? 3 : 2)}
+              dashArray={isRouteAdminMode && !isSel ? '6 4' : ''}
+              eventHandlers={isRouteAdminMode ? {
+                click: (e) => {
+                  e.originalEvent?.stopPropagation();
+                  setSelectedEdge(prev => prev?.id === edge.id ? null : edge);
+                  setSelectedId(null);
+                }
+              } : {}}
             />
           );
         })}
 
+        {/* Botón eliminar tramo (al seleccionar un edge en admin) */}
+        {isRouteAdminMode && selectedEdge && (() => {
+          const src = nodes.find(n => n.id === selectedEdge.source);
+          const tgt = nodes.find(n => n.id === selectedEdge.target);
+          if (!src || !tgt) return null;
+          const midLat = (src.lat + tgt.lat) / 2;
+          const midLng = (src.lng + tgt.lng) / 2;
+          const deleteTramoIcon = new L.DivIcon({
+            html: `<div style="background:#ef4444;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(239,68,68,0.5);border:2px solid white;font-size:18px;font-weight:bold;line-height:1">×</div>`,
+            iconSize: [30, 30], iconAnchor: [15, 15], className: ''
+          });
+          return (
+            <Marker
+              key={`del-${selectedEdge.id}`}
+              position={[midLat, midLng]}
+              icon={deleteTramoIcon}
+              eventHandlers={{
+                click: (e) => { e.originalEvent?.stopPropagation(); handleDeleteEdge(selectedEdge); }
+              }}
+            />
+          );
+        })()}
+
         {/* Nodos (solo en modo admin) */}
         {isRouteAdminMode && nodes.map(node => {
           const isSel    = selectedId === node.id;
+          const isConn   = connectingFrom === node.id;
           const hasPlace = !!getUbiByNodeId(node.id);
           return (
             <CircleMarker
               key={node.id}
               center={[node.lat, node.lng]}
-              radius={isSel ? 9 : (hasPlace ? 7 : 6)}
+              radius={isSel ? 10 : isConn ? 10 : (hasPlace ? 7 : 6)}
               pathOptions={{
-                color:       isSel ? '#ef4444' : (hasPlace ? '#16a34a' : '#6366f1'),
-                fillColor:   isSel ? '#ef4444' : (hasPlace ? '#22c55e' : '#818cf8'),
-                fillOpacity: 1, weight: 2,
+                color:       isSel ? '#ef4444' : isConn ? '#f97316' : (hasPlace ? '#16a34a' : '#6366f1'),
+                fillColor:   isSel ? '#ef4444' : isConn ? '#fdba74' : (hasPlace ? '#22c55e' : '#818cf8'),
+                fillOpacity: 1, weight: isSel ? 3 : 2,
               }}
-              eventHandlers={{
-                click:    e => handleNodeClick(node, e),
-                dblclick: e => handleNodeDoubleClick(node, e),
-              }}
-            >
-              <Popup>
-                <b>{node.label || 'Nodo sin nombre'}</b><br />
-                <small>ID: {node.id} · Lat: {node.lat.toFixed(5)} · Lng: {node.lng.toFixed(5)}</small>
-              </Popup>
-            </CircleMarker>
+              eventHandlers={{ click: e => handleNodeClick(node, e) }}
+            />
           );
         })}
 
-        {/* Pins de Ubicaciones */}
-        {ubicaciones.map(ubi => {
+        {/* Pins de Ubicaciones (solo en modo usuario, no en admin) */}
+        {!isRouteAdminMode && ubicaciones.map(ubi => {
           const node = nodes.find(n => n.id === ubi.nodeId);
           if (!node) return null;
-
-          // Renderizar el icono Md de la categoría como SVG inline para el DivIcon
           const IconComp = MdIcons[ubi.icono] || MdIcons.MdPlace;
           const svgMarkup = ReactDOMServer.renderToStaticMarkup(
             <IconComp style={{ color: 'white', fontSize: '18px', display: 'block' }} />
           );
-
           const icon = new L.DivIcon({
             html: `<div style="background:#155dfc;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(21,93,252,0.45);border:2.5px solid white">${svgMarkup}</div>`,
             iconSize: [36, 36], iconAnchor: [18, 18], className: ''
           });
-
           return (
             <Marker
               key={ubi.id}
@@ -623,11 +642,8 @@ const CampusMap = forwardRef(function CampusMap({
               icon={icon}
               eventHandlers={{
                 click: () => {
-                  if (!isRouteAdminMode && onUbicacionSelect) {
-                    // Centrar y acercar el mapa al pin con animación suave
-                    mapInstanceRef.current?.flyTo([node.lat, node.lng], 19, { duration: 0.8 });
-                    onUbicacionSelect(ubi.id);
-                  }
+                  mapInstanceRef.current?.flyTo([node.lat, node.lng], 19, { duration: 0.8 });
+                  onUbicacionSelect?.(ubi.id);
                 }
               }}
             />
@@ -641,7 +657,12 @@ const CampusMap = forwardRef(function CampusMap({
           </Marker>
         )}
 
-        <MapClickInterceptor isAdminMode={isRouteAdminMode && canAddNodes} onMapClick={handleMapClick} />
+        <MapClickInterceptor
+          isAddingNodes={isRouteAdminMode && canAddNodes}
+          isConnecting={!!connectingFrom}
+          onMapClick={handleMapClick}
+          onCancelConnect={() => updateConnectingFrom(null)}
+        />
       </MapContainer>
     </div>
   );

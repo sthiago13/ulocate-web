@@ -9,7 +9,7 @@ import ResultCard from '../common/ResultCard';
 import { supabase } from '../../lib/supabaseClient';
 import Spinner from '../common/Spinner';
 
-export default function GestionarLugares({ isOpen, onClose, onLocationSelect }) {
+export default function GestionarLugares({ isOpen, onClose, onLocationSelect, initialSearchTerm = '' }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Todos");
@@ -42,8 +42,12 @@ export default function GestionarLugares({ isOpen, onClose, onLocationSelect }) 
   useEffect(() => {
     if (isOpen) {
       fetchLugares();
+      // Pre-filtrar si se abre desde el mapa con un término de búsqueda
+      if (initialSearchTerm) setSearchTerm(initialSearchTerm);
+    } else {
+      setSearchTerm('');
     }
-  }, [isOpen]);
+  }, [isOpen, initialSearchTerm]);
 
   // Derive categories from the existing places dynamically
   const categoryFilters = ["Todos", ...new Set(lugares.map(l => l.Categoria?.Nombre_Categoria).filter(Boolean))];
