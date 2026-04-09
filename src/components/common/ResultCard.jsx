@@ -14,6 +14,8 @@ export default function ResultCard({
     <div 
       onClick={onClick}
       className={`group bg-[#f9f9f9] border border-[#d9d9d9] flex flex-col px-[20px] py-[15px] rounded-[15px] w-full hover:bg-gray-50 transition-colors shadow-sm relative ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      role={onClick ? "button" : undefined}
+      aria-label={onClick ? `Ver detalles de ${title}` : undefined}
     >
       
       {/* Header Info */}

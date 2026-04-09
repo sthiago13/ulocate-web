@@ -27,6 +27,7 @@ export default function AdministracionPanel({ onClose, onOpenGestionarLugares, o
           <button
             onClick={onClose}
             className="bg-[#e9e9e9] hover:bg-gray-300 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            aria-label="Cerrar panel de administración"
           >
             <MdClose className="text-gray-700 text-[18px]" />
           </button>
@@ -44,6 +45,7 @@ export default function AdministracionPanel({ onClose, onOpenGestionarLugares, o
                 key={index}
                 onClick={area.action}
                 className={`flex flex-col items-center justify-center gap-2 bg-[#f9f9f9] hover:bg-[#e9e9e9] border border-gray-100 p-4 rounded-[20px] transition-colors group ${isLastOdd ? 'col-span-2' : ''}`}
+                aria-label={`Ir a ${area.label}`}
               >
                 <div className="w-[48px] h-[48px] bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                   <Icon className="text-[#155dfc] text-[24px]" />

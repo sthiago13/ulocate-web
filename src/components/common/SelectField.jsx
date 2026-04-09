@@ -50,6 +50,7 @@ export default function SelectField({
         id={id}
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white border border-[#090909] flex items-center justify-between px-3 rounded-[8px] w-full h-[46px] cursor-pointer"
+        aria-label={props['aria-label'] || label || 'Seleccionar opción'}
         {...props}
       >
         <span className={`font-['Plus_Jakarta_Sans'] font-normal text-[14px] truncate ${!selectedOption?.label ? 'text-[#a3a3a3]' : 'text-black'}`}>

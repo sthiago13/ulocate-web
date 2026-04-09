@@ -30,11 +30,15 @@ export default function ModalConfirmacion({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white rounded-[20px] p-6 w-full max-w-[400px] shadow-xl pointer-events-auto flex flex-col gap-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
+              aria-describedby="modal-desc"
             >
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[20px] text-gray-900">
+               <h3 id="modal-title" className="font-['Plus_Jakarta_Sans'] font-bold text-[20px] text-gray-900">
                 {titulo}
               </h3>
-              <p className="font-['Plus_Jakarta_Sans'] text-[15px] text-gray-600">
+               <p id="modal-desc" className="font-['Plus_Jakarta_Sans'] text-[15px] text-gray-600">
                 {mensaje}
               </p>
               
@@ -44,6 +48,7 @@ export default function ModalConfirmacion({
                   <button
                     onClick={onClose}
                     className="px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label={textoCancelar}
                   >
                     {textoCancelar}
                   </button>
@@ -51,6 +56,7 @@ export default function ModalConfirmacion({
                 <button
                   onClick={onConfirm}
                   className={`px-4 py-2 rounded-lg font-['Plus_Jakarta_Sans'] font-medium text-white transition-colors flex items-center justify-center min-w-[100px] ${colorConfirmar}`}
+                  aria-label={textoConfirmar}
                 >
                   {textoConfirmar}
                 </button>

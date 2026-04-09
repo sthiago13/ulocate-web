@@ -148,6 +148,7 @@ export default function UsuarioMiPerfil({ onClose }) {
           <button
             onClick={onClose}
             className="bg-[#e9e9e9] hover:bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0"
+            aria-label="Cerrar panel de perfil"
           >
             <MdClose className="text-gray-700 text-[24px]" />
           </button>
@@ -177,6 +178,7 @@ export default function UsuarioMiPerfil({ onClose }) {
                   <button 
                     onClick={() => setIsEditing(true)}
                     className="bg-[#155dfc] hover:bg-blue-700 transition-colors w-full rounded-[13px] py-[10px] flex justify-center items-center h-[50px] gap-2"
+                    aria-label="Editar información del perfil"
                   >
                     <MdEdit className="text-white text-[24px]" />
                     <span className="text-[#f9f9f9] font-['Inter'] font-normal text-[20px]">
@@ -273,6 +275,7 @@ export default function UsuarioMiPerfil({ onClose }) {
                         setFormData(prev => ({ ...prev, passActual: '', passNueva: '', passRepetir: '', nombre: userData.nombre })); 
                     }}
                     className="bg-[#e9e9e9] hover:bg-gray-300 text-gray-700 transition-colors w-full rounded-[13px] py-[10px] flex justify-center items-center h-[50px] font-medium"
+                    aria-label="Cancelar edición y descartar cambios"
                   >
                     <span className="font-['Inter'] text-[20px]">
                       Cancelar
@@ -282,6 +285,7 @@ export default function UsuarioMiPerfil({ onClose }) {
                     onClick={guardarCambios}
                     disabled={loading}
                     className="bg-[#155dfc] hover:bg-blue-700 disabled:opacity-50 transition-colors w-full rounded-[13px] py-[10px] flex justify-center items-center h-[50px] gap-2"
+                    aria-label="Guardar cambios de perfil"
                   >
                     <MdSave className="text-white text-[24px]" />
                     <span className="text-[#f9f9f9] font-['Inter'] font-normal text-[20px]">
