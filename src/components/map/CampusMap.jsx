@@ -503,7 +503,7 @@ const CampusMap = forwardRef(function CampusMap({
       {/* ── Botones de Zoom ─────────────────────────────────────────────────── */}
       {createPortal(
         <div
-          style={{ zIndex: 59 }}
+          style={{ zIndex: 3 }}
           className="fixed
             top-24 right-3
             md:top-auto md:bottom-28 md:right-4
