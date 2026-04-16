@@ -182,7 +182,15 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
       )}
 
       {isHistoryOpen && (
-        <HistorialRutas onClose={() => setIsHistoryOpen(false)} />
+        <HistorialRutas 
+          onClose={() => setIsHistoryOpen(false)}
+          onRouteRequest={(originObj, destObj) => {
+            setIsHistoryOpen(false);
+            if (campusMapRef?.current?.startRoute) {
+              campusMapRef.current.startRoute(destObj, originObj);
+            }
+          }}
+        />
       )}
 
       {isNotificationsOpen && (

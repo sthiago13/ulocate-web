@@ -3,19 +3,32 @@ import { createPortal } from 'react-dom';
 import { MdClose, MdNavigation, MdMyLocation, MdSearch, MdPlace, MdSwapVert } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { supabase } from '../../lib/supabaseClient';
 export default function RoutePlanner({ 
   onClose, 
   onExecute, 
   initialDestination, 
+  initialOrigin,
   ubicaciones = [], 
   userPosition 
 }) {
-  const [origin, setOrigin] = useState(null); // { id, nombre, type: 'location' | 'gps' }
-  const [destination, setDestination] = useState(initialDestination || null);
+  const getFullLocation = (loc) => {
+    if (!loc) return null;
+    if (loc.type === 'gps') return loc;
+    const locId = loc.id || loc.ID_Ubicacion || loc;
+    const ubi = ubicaciones.find(u => u.id === locId);
+    if (ubi) return { id: ubi.id, nodeId: ubi.nodeId, nombre: ubi.nombre, type: 'location', categoria: ubi.categoria };
+    return loc.nombre ? loc : null;
+  };
+
+  const initialOrigFull = getFullLocation(initialOrigin);
+  const initialDestFull = getFullLocation(initialDestination);
+
+  const [origin, setOrigin] = useState(initialOrigFull); // { id, nombre, type: 'location' | 'gps' }
+  const [destination, setDestination] = useState(initialDestFull);
   
-  const [originSearch, setOriginSearch] = useState('');
-  const [destSearch, setDestSearch] = useState(initialDestination?.nombre || initialDestination?.Nombre || '');
+  const [originSearch, setOriginSearch] = useState(initialOrigFull?.nombre || '');
+  const [destSearch, setDestSearch] = useState(initialDestFull?.nombre || '');
   
   const [activeField, setActiveField] = useState(null); // 'origin' | 'destination'
   

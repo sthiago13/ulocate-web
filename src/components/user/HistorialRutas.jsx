@@ -6,7 +6,7 @@ import { formatRelativeDate } from '../../utils/formatters';
 import Spinner from '../common/Spinner';
 import ModalConfirmacion from '../common/ModalConfirmacion';
 
-export default function HistorialRutas({ onClose }) {
+export default function HistorialRutas({ onClose, onRouteRequest }) {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -24,6 +24,8 @@ export default function HistorialRutas({ onClose }) {
             ID_Historial,
             Fecha_Hora,
             Distancia_Total_Metros,
+            ID_Ubicacion_Origen,
+            ID_Ubicacion_Destino,
             UbicacionOrigen:Ubicacion!ID_Ubicacion_Origen(Nombre),
             UbicacionDestino:Ubicacion!ID_Ubicacion_Destino(Nombre)
           `)
@@ -73,10 +75,10 @@ export default function HistorialRutas({ onClose }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col pt-[30px] px-[30px] rounded-none sm:rounded-l-[30px] z-[70] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-full sm:w-[456px] bg-white flex flex-col pt-[30px] rounded-none sm:rounded-l-[30px] z-[70] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between w-full mb-[30px] shrink-0">
+        <div className="flex items-center justify-between w-full mb-[30px] px-[30px] shrink-0">
           <div className="flex gap-[20px] items-center">
             <div className="bg-[#e8f0fe] flex items-center justify-center rounded-[100px] w-[60px] h-[60px] shrink-0">
               <MdHistory className="text-[#155dfc] text-[32px]" />
@@ -96,7 +98,7 @@ export default function HistorialRutas({ onClose }) {
         </div>
 
         {/* History List */}
-        <div className="flex flex-col gap-[20px] w-full flex-1 pb-[100px]">
+        <div className="flex flex-col gap-[20px] w-full flex-1 overflow-y-auto px-[30px] pb-[30px]">
           {loading ? (
             <Spinner color="border-blue-500" text="Cargando historial..." />
           ) : history.length === 0 ? (
@@ -157,7 +159,14 @@ export default function HistorialRutas({ onClose }) {
 
                 {/* Action */}
                 <div className="mt-1 pt-3 border-t border-gray-50">
-                  <button className="text-[#155dfc] bg-[#f5f8ff] hover:bg-[#e8f0fe] flex items-center justify-center gap-2 w-full py-[10px] rounded-[12px] text-[14px] font-bold transition-colors">
+                  <button 
+                    onClick={() => {
+                      const originObj = route.ID_Ubicacion_Origen ? { id: route.ID_Ubicacion_Origen, type: 'location' } : null;
+                      const destObj = route.ID_Ubicacion_Destino ? { id: route.ID_Ubicacion_Destino, type: 'location' } : null;
+                      if (onRouteRequest) onRouteRequest(originObj, destObj);
+                    }}
+                    className="text-[#155dfc] bg-[#f5f8ff] hover:bg-[#e8f0fe] flex items-center justify-center gap-2 w-full py-[10px] rounded-[12px] text-[14px] font-bold transition-colors"
+                  >
                     <MdDirections className="text-[20px]" />
                     Repetir ruta
                   </button>
@@ -169,10 +178,10 @@ export default function HistorialRutas({ onClose }) {
 
         {/* Boton Borrar Historial */}
         {!loading && history.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-[30px] bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+          <div className="w-full shrink-0 px-[30px] pb-[30px] pt-[20px] bg-white border-t border-gray-100 border-opacity-70 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
             <button
               onClick={() => setShowConfirm(true)}
-              className="w-full bg-[#fff0f0] hover:bg-red-100 text-[#cd1e1e] border border-red-200 transition-colors rounded-[16px] py-[14px] flex justify-center items-center gap-2 shadow-sm hover:shadow-md pointer-events-auto"
+              className="w-full bg-[#fff0f0] hover:bg-red-100 text-[#cd1e1e] border border-red-200 transition-colors rounded-[16px] py-[14px] flex justify-center items-center gap-2 shadow-sm hover:shadow-md"
             >
               <MdDelete className="text-[24px]" />
               <span className="font-['Plus_Jakarta_Sans'] font-semibold text-[16px]">

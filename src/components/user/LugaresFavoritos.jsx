@@ -200,11 +200,11 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-full sm:w-[456px] bg-white flex flex-col pt-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
 
         {/* Header */}
-        <div className="flex items-center justify-between w-full mb-[30px]">
+        <div className="flex items-center justify-between w-full mb-[30px] px-[30px] shrink-0">
           <div className="flex gap-[20px] items-center">
             <div className="bg-[#fffabe] flex items-center justify-center rounded-[100px] w-[60px] h-[60px] shrink-0">
               <MdStar className="text-[#eab308] text-[32px]" />
@@ -222,8 +222,11 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
           </button>
         </div>
 
-        {/* Saved Places */}
-        <div className="flex flex-col gap-[22px] w-full mb-[30px]">
+        {/* Contenedor escrolleable */}
+        <div className="flex flex-col w-full flex-1 overflow-y-auto px-[30px] pb-[30px]">
+          
+          {/* Saved Places */}
+          <div className="flex flex-col gap-[22px] w-full mb-[30px]">
           {loading ? (
              <Spinner text="Cargando favoritos..." />
           ) : favoritos.length === 0 ? (
@@ -283,6 +286,7 @@ export default function LugaresFavoritos({ onClose, onLocationSelect }) {
               <MdStar className="text-[#eab308] text-[20px]" />
             </div>
           </div>
+        </div>
         </div>
 
       </motion.div>

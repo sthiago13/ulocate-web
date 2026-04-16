@@ -117,12 +117,12 @@ export default function Notificaciones({ onClose }) {
       <motion.div
         initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full w-full sm:w-[456px] overflow-y-auto bg-white flex flex-col p-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
+        className="fixed top-0 right-0 h-full w-full sm:w-[456px] bg-white flex flex-col pt-[30px] rounded-none sm:rounded-l-[30px] z-[60] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]"
       >
         {!isPreferencesOpen ? (
-          <div className="flex flex-col w-full h-full">
+          <div className="flex flex-col w-full h-full relative overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between w-full mb-[30px] shrink-0">
+            <div className="flex items-center justify-between w-full mb-[30px] px-[30px] shrink-0">
               <div className="flex gap-[20px] items-center">
                 <div className="bg-[#fff4e5] flex items-center justify-center rounded-[100px] w-[60px] h-[60px] shrink-0">
                   <MdNotificationsActive className="text-[#f59e0b] text-[32px]" />
@@ -138,7 +138,7 @@ export default function Notificaciones({ onClose }) {
             </div>
 
             {/* Lista */}
-            <div className="flex flex-col gap-[14px] w-full pb-[80px]">
+            <div className="flex flex-col gap-[14px] w-full flex-1 overflow-y-auto px-[30px] pb-[100px]">
               {loading ? (
                 <Spinner color="border-yellow-500" text="Buscando notificaciones..." />
               ) : notifications.length === 0 ? (
@@ -243,7 +243,7 @@ export default function Notificaciones({ onClose }) {
             </div>
 
             {/* Botón flotante preferencias */}
-            <div className="fixed bottom-[30px] right-[30px] sm:absolute sm:bottom-[30px] sm:right-[30px] z-10">
+            <div className="absolute bottom-[30px] right-[30px] z-10 w-[50px] h-[50px]">
               <button
                 onClick={(e) => { e.stopPropagation(); setIsPreferencesOpen(true); }}
                 className="bg-[#155dfc] hover:bg-blue-700 text-white w-[50px] h-[50px] rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"
@@ -255,8 +255,8 @@ export default function Notificaciones({ onClose }) {
           </div>
         ) : (
           // ── Panel de Preferencias ─────────────────────────────────────────
-          <div className="flex flex-col w-full h-full">
-            <div className="flex items-center justify-between w-full mb-[30px] shrink-0">
+          <div className="flex flex-col w-full h-full relative overflow-hidden">
+            <div className="flex items-center justify-between w-full mb-[30px] px-[30px] shrink-0">
               <div className="flex gap-[20px] items-center">
                 <div className="bg-[#fff4e5] flex items-center justify-center rounded-[100px] w-[60px] h-[60px] shrink-0">
                   <MdSettings className="text-[#f59e0b] text-[32px]" />
@@ -271,7 +271,7 @@ export default function Notificaciones({ onClose }) {
               </button>
             </div>
 
-            <div className="flex flex-col gap-[20px] w-full flex-1">
+            <div className="flex flex-col gap-[20px] w-full flex-1 overflow-y-auto px-[30px] pb-[30px]">
               <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-[16px] text-[#101828]">Ajustes de Campus</h3>
 
               <div className="flex flex-col gap-[16px] w-full">
@@ -301,7 +301,7 @@ export default function Notificaciones({ onClose }) {
               </div>
             </div>
 
-            <div className="mt-auto pt-6 pb-2">
+            <div className="w-full shrink-0 px-[30px] pb-[30px] pt-[20px] bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
               <Button onClick={handleSavePrefs} disabled={savingPrefs} variant="primary">
                 <MdSave className="text-[24px] mr-2" />
                 {savingPrefs ? 'Guardando...' : 'Guardar Preferencias'}

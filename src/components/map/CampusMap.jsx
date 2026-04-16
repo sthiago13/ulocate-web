@@ -95,6 +95,7 @@ const CampusMap = forwardRef(function CampusMap({
   // ─── Route Planner State ──────────────────────────────────────────────────
   const [isRoutePlannerOpen, setIsRoutePlannerOpen] = useState(false);
   const [plannerDestination, setPlannerDestination] = useState(null);
+  const [plannerOrigin, setPlannerOrigin] = useState(null);
 
   // GPS
   const [userPosition, setUserPosition] = useState(null);
@@ -194,8 +195,9 @@ const CampusMap = forwardRef(function CampusMap({
 
   // ─── Trazar ruta (llamado desde BottomMenu o TarjetaUbicacion) ──────────────
   // Ahora abre el planificador en lugar de iniciar inmediatamente
-  const startRoute = useCallback((ubiTarget) => {
+  const startRoute = useCallback((ubiTarget, ubiOrigin = null) => {
     setPlannerDestination(ubiTarget);
+    setPlannerOrigin(ubiOrigin);
     setIsRoutePlannerOpen(true);
   }, []);
 
@@ -271,6 +273,23 @@ const CampusMap = forwardRef(function CampusMap({
       setArrived(false);
       setShowArrivalToast(false);
       setIsRoutePlannerOpen(false); // Cerramos el planificador
+
+      // Guardar en el historial de forma asíncrona (con la distancia calculada)
+      const finalDistance = totalDist || distance;
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          const payload = {
+            ID_Usuario: user.id,
+            ID_Ubicacion_Origen: origin.type === 'location' ? parseInt(origin.id) : null,
+            ID_Ubicacion_Destino: parseInt(destination.id || destination.ID_Ubicacion),
+            Distancia_Total_Metros: parseFloat(finalDistance.toFixed(2))
+          };
+          supabase.from('Historial_Ruta').insert([payload]).then(({ error }) => {
+            if (error) console.error("Error al guardar historial de ruta:", error);
+          });
+        }
+      }).catch(err => console.error("Error obteniendo usuario para historial:", err));
+      
     } catch (err) {
       console.error('Error en pathfinding:', err);
       alert('Error calculando la ruta.');
@@ -481,6 +500,7 @@ const CampusMap = forwardRef(function CampusMap({
               onClose={() => setIsRoutePlannerOpen(false)}
               onExecute={executeRoute}
               initialDestination={plannerDestination}
+              initialOrigin={plannerOrigin}
               ubicaciones={ubicaciones}
               userPosition={userPosition}
             />
