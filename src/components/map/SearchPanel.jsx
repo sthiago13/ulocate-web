@@ -1,38 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MdClose, MdPlace } from 'react-icons/md';
 import * as MdIcons from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResultCard from '../common/ResultCard';
 import SearchBar from '../common/SearchBar';
-import { supabase } from '../../lib/supabaseClient';
 import Spinner from '../common/Spinner';
+import { useUbicaciones, useCategorias } from '../../hooks/useMapData';
 
-export default function SearchPanel({ onClose, onLocationSelect }) {
+export default function SearchPanel({ onClose, onLocationSelect, isAdmin = false }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Todos");
   
-  const [ubicacionesRemotas, setUbicacionesRemotas] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const { data: ubis } = await supabase.from('Ubicacion').select('*');
-        const { data: cats } = await supabase.from('Categoria').select('*');
-        if (ubis) setUbicacionesRemotas(ubis);
-        if (cats) setCategorias(cats);
-      } catch (err) {
-        console.error("Error cargando datos remotos:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const { data: ubicacionesRemotas = [], isLoading: isLoadingUbis } = useUbicaciones({ isAdmin });
+  const { data: categorias = [], isLoading: isLoadingCats } = useCategorias({ isAdmin });
+  
+  const loading = isLoadingUbis || isLoadingCats;
 
   const allResults = ubicacionesRemotas.map(u => {
     const cat = categorias.find(c => c.ID_Categoria === u.ID_Categoria);

@@ -16,11 +16,6 @@ import GestionarZonas from '../admin/GestionarZonas';
 import EditorLugar from '../admin/EditorLugar';
 import { supabase } from '../../lib/supabaseClient';
 
-/**
- * BottomMenu recibe `campusMapRef` que es un ref con el método `startRoute(ubicacion)`.
- * Este patrón evita el uso de localStorage/window events para comunicar
- * TarjetaUbicacion → CampusMap.
- */
 const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminRoutes, campusMapRef, isAdminMode = false, onExitAdminMode }, ref) {
   const [isMenuOpen,              setIsMenuOpen]              = useState(false);
   const [isSearchOpen,            setIsSearchOpen]            = useState(false);
@@ -244,6 +239,7 @@ const BottomMenu = forwardRef(function BottomMenu({ className = '', onOpenAdminR
         <SearchPanel
           onClose={() => setIsSearchOpen(false)}
           onLocationSelect={handleLocationSelect}
+          isAdmin={isAdmin}
         />
       )}
 

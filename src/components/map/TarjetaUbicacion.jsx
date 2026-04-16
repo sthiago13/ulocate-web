@@ -5,17 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
 import ModalConfirmacion from '../common/ModalConfirmacion';
 import ModalFormulario from '../common/ModalFormulario';
+import { useUbicaciones, useCategorias, useZonas, useImagenesUbicacion } from '../../hooks/useMapData';
 
 export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit, onRouteRequest }) {
-  const [ubicacion, setUbicacion] = useState(null);
-  const [imagenes, setImagenes] = useState([]);
   const [imgIndex, setImgIndex] = useState(0);
-  
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteId, setFavoriteId] = useState(null);
-  
   const [showExtras, setShowExtras] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
   // States for the ModalConfirmacion
@@ -23,57 +19,53 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ dia: '', hora: '', notas: '' });
 
+  // 1. Datos base desde caché con React Query (carga instantánea)
+  const { data: ubicaciones = [], isLoading: isLoadingUbis } = useUbicaciones({ isAdmin });
+  const { data: categorias = [], isLoading: isLoadingCats } = useCategorias({ isAdmin });
+  const { data: zonas = [], isLoading: isLoadingZonas } = useZonas({ isAdmin });
+  
+  // 2. Imágenes cargadas "por detrás"
+  const { data: imagenes = [] } = useImagenesUbicacion(ubicacionId);
+
+  // Reconstruimos el objeto ubicacion para compatibilidad con el resto del componente
+  const baseData = ubicaciones.find(u => u.ID_Ubicacion === ubicacionId);
+  const ubicacion = baseData ? {
+    ...baseData,
+    Categoria: categorias.find(c => c.ID_Categoria === baseData.ID_Categoria) || null,
+    Zona: zonas.find(z => z.ID_Zona === baseData.ID_Zona) || null
+  } : null;
+
+  const isLoadingBaseInfo = isLoadingUbis || isLoadingCats || isLoadingZonas;
+
+  // 3. Pequeño fetch asíncrono para el perfil del usuario activo y sus favoritos guardados
   useEffect(() => {
     if (!ubicacionId) return;
     
-    const fetchAll = async () => {
-      setLoading(true);
-      
-      const targetId = ubicacionId;
-
-      // 1. Obtener Usuario
+    let isMounted = true;
+    const fetchUserData = async () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!isMounted) return;
       setUser(currentUser);
       
-      // 2. Obtener Ubicacion con sus relaciones (Categoria, Zona)
-      const { data: ubiData } = await supabase
-        .from('Ubicacion')
-        .select(`
-          *,
-          Categoria (*),
-          Zona (*)
-        `)
-        .eq('ID_Ubicacion', targetId)
-        .single();
-        
-      if (ubiData) setUbicacion(ubiData);
-
-      // 3. Obtener Imagenes desde Referencias_Visuales
-      const { data: imgData } = await supabase
-        .from('Referencias_Visuales')
-        .select('URL_Imagen')
-        .eq('ID_Ubicacion', targetId);
-        
-      if (imgData) setImagenes(imgData.map(i => i.URL_Imagen).filter(url => url));
-
-      // 4. Verificar estado de Favorito para este usuario
       if (currentUser) {
         const { data: favData } = await supabase
           .from('Ubicacion_Guardada')
           .select('ID_Guardado')
           .eq('ID_Usuario', currentUser.id)
-          .eq('ID_Ubicacion', targetId)
+          .eq('ID_Ubicacion', ubicacionId)
           .maybeSingle();
           
-        if (favData) {
+        if (isMounted && favData) {
           setIsFavorite(true);
           setFavoriteId(favData.ID_Guardado);
         }
       }
-      
-      setLoading(false);
     };
-    fetchAll();
+    fetchUserData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [ubicacionId]);
 
   // Funciones Carrusel
@@ -159,7 +151,7 @@ export default function TarjetaUbicacion({ ubicacionId, onClose, isAdmin, onEdit
     }
   };
 
-  if (loading) {
+  if (isLoadingBaseInfo) {
      return null; // Podría ponerse un loader, o mantenerse transparente para que cargue rapidito en segundo plano
   }
   if (!ubicacion) return null;
