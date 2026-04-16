@@ -46,7 +46,7 @@ export default function SearchPanel({ onClose, onLocationSelect, isAdmin = false
           <button onClick={onClose} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 text-gray-700 transition-colors"><MdClose className="w-5 h-5" /></button>
         </div>
 
-        <div className="w-full flex-1 overflow-y-auto flex flex-col gap-3 mb-4 pr-1">
+        <div className="w-full flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 mb-4 pr-1">
           {loading && filtrados.length === 0 ? <Spinner text="Cargando..." /> : 
            filtrados.length > 0 ? filtrados.map(res => {
              const Icon = res.iconName && MdIcons[res.iconName] ? MdIcons[res.iconName] : MdIcons.MdPlace;
@@ -65,9 +65,9 @@ export default function SearchPanel({ onClose, onLocationSelect, isAdmin = false
 
         <AnimatePresence>
           {showFilters && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="w-full flex gap-3 overflow-x-auto py-2 mb-2 scrollbar-hide">
-              {categoryFilters.map(cat => (
-                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap border ${activeCategory===cat ? 'bg-blue-600 text-white border-blue-600':'bg-gray-50 text-gray-600 border-gray-200'}`}>{cat}</button>
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="w-full flex shrink-0 gap-3 overflow-x-auto py-2 mb-2 scrollbar-hide">
+              {['Todos', ...Array.from(new Set(categorias.map(c => c.Nombre_Categoria)))].map(cat => (
+                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap border transition-colors shrink-0 ${activeCategory===cat ? 'bg-blue-600 text-white border-blue-600':'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>{cat}</button>
               ))}
             </motion.div>
           )}
